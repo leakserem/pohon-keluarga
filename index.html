@@ -3,43 +3,37 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="description"
-        content="Pohon Keluarga Digital">
+<meta
+    name="description"
+    content="Pohon Keluarga Digital">
 
-    <meta
-        name="theme-color"
-        content="#2d6850">
+<meta
+    name="theme-color"
+    content="#2d6850">
 
-    <title>Pohon Keluarga Kami</title>
+<title>Pohon Keluarga Kami</title>
 
-    <link
-        rel="icon"
-        href="favicon.ico">
+<link rel="icon" href="favicon.ico">
 
-    <link
-        rel="manifest"
-        href="manifest.json">
+<link rel="manifest" href="manifest.json">
 
-    <!-- ===================================================== -->
-    <!-- CSS -->
-    <!-- ===================================================== -->
+<!-- CSS -->
 
-    <link rel="stylesheet" href="assets/css/00-reset.css">
-    <link rel="stylesheet" href="assets/css/01-variables.css">
-    <link rel="stylesheet" href="assets/css/02-base.css">
-    <link rel="stylesheet" href="assets/css/03-layout.css">
-    <link rel="stylesheet" href="assets/css/04-components.css">
-    <link rel="stylesheet" href="assets/css/05-tree.css">
-    <link rel="stylesheet" href="assets/css/06-animations.css">
-    <link rel="stylesheet" href="assets/css/07-dark.css">
-    <link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/00-reset.css">
+<link rel="stylesheet" href="assets/css/01-variables.css">
+<link rel="stylesheet" href="assets/css/02-base.css">
+<link rel="stylesheet" href="assets/css/03-layout.css">
+<link rel="stylesheet" href="assets/css/04-components.css">
+<link rel="stylesheet" href="assets/css/05-tree.css">
+<link rel="stylesheet" href="assets/css/06-animations.css">
+<link rel="stylesheet" href="assets/css/07-dark.css">
+<link rel="stylesheet" href="assets/css/app.css">
 
 </head>
 
@@ -71,69 +65,21 @@
         id="toolbar"
         class="toolbar">
 
-        <button
-            id="btnHome"
-            class="btn">
+        <button id="btnHome" class="btn">🏠</button>
 
-            🏠
+        <button id="zoomOut" class="btn">−</button>
 
-        </button>
+        <button id="zoomReset" class="btn">100%</button>
 
-        <button
-            id="zoomOut"
-            class="btn">
+        <button id="zoomIn" class="btn">+</button>
 
-            −
+        <button id="btnFit" class="btn">Fit</button>
 
-        </button>
+        <button id="btnCenter" class="btn">Center</button>
 
-        <button
-            id="zoomReset"
-            class="btn">
+        <button id="btnTheme" class="btn">🌙</button>
 
-            100%
-
-        </button>
-
-        <button
-            id="zoomIn"
-            class="btn">
-
-            +
-
-        </button>
-
-        <button
-            id="btnFit"
-            class="btn">
-
-            Fit
-
-        </button>
-
-        <button
-            id="btnCenter"
-            class="btn">
-
-            Center
-
-        </button>
-
-        <button
-            id="btnTheme"
-            class="btn">
-
-            🌙
-
-        </button>
-
-        <button
-            id="btnPrint"
-            class="btn">
-
-            🖨
-
-        </button>
+        <button id="btnPrint" class="btn">🖨</button>
 
         <button
             id="btnAddMember"
@@ -148,22 +94,18 @@
 </header>
 
 <!-- ===================================================== -->
-<!-- APPLICATION -->
+<!-- MAIN -->
 <!-- ===================================================== -->
 
 <div class="app-layout">
 
-    <!-- ================================================= -->
     <!-- SIDEBAR -->
-    <!-- ================================================= -->
 
     <aside
         id="sidebar"
         class="sidebar">
 
-        <div
-            id="sidebarSearch"
-            class="sidebar-search">
+        <div class="sidebar-search">
 
             <input
                 id="searchInput"
@@ -196,9 +138,7 @@
 
     </aside>
 
-    <!-- ================================================= -->
     <!-- TREE -->
-    <!-- ================================================= -->
 
     <main
         id="treeArea"
@@ -208,20 +148,39 @@
             id="treeCanvas"
             class="tree-canvas">
 
+            <!-- SVG CONNECTIONS -->
+
+            <svg
+                id="treeSvg"
+                class="tree-svg">
+
+            </svg>
+
+            <!-- NODE LAYER -->
+
+            <div
+                id="treeNodes"
+                class="tree-nodes">
+
+            </div>
+
         </div>
 
     </main>
 
-    <!-- ================================================= -->
-    <!-- DETAIL PANEL -->
-    <!-- ================================================= -->
+    <!-- DETAIL -->
 
     <aside
         id="detailPanel"
         class="detail-panel">
 
-        <div
-            id="detailContent">
+        <div id="detailContent">
+
+            <p>
+
+                Pilih anggota keluarga.
+
+            </p>
 
         </div>
 
@@ -233,21 +192,21 @@
 <!-- DIALOG -->
 <!-- ===================================================== -->
 
-<dialog
-    id="appDialog"
-    class="dialog">
+<dialog id="memberDialog">
 
     <div class="dialog-window">
 
         <header class="dialog-header">
 
-            <h2 id="dialogTitle">
+            <h2>
+
+                Tambah Anggota
 
             </h2>
 
             <button
                 class="btn"
-                data-close>
+                onclick="this.closest('dialog').close()">
 
                 ✕
 
@@ -263,6 +222,14 @@
         <footer
             id="dialogFooter">
 
+            <button
+                class="btn"
+                onclick="this.closest('dialog').close()">
+
+                Tutup
+
+            </button>
+
         </footer>
 
     </div>
@@ -277,9 +244,7 @@
     id="loading"
     class="loading-overlay hidden">
 
-    <div class="loader">
-
-    </div>
+    <div class="loader"></div>
 
     <p>
 
@@ -315,14 +280,14 @@
 
     <div>
 
-        Dibangun dengan Family Tree v2
+        Family Tree v2
 
     </div>
 
 </footer>
 
 <!-- ===================================================== -->
-<!-- APPLICATION -->
+<!-- APP -->
 <!-- ===================================================== -->
 
 <script
