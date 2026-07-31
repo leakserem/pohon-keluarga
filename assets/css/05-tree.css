@@ -1,0 +1,343 @@
+/* ==========================================================
+   Family Tree v2
+   tree.css
+   Tree Canvas & Nodes
+   ========================================================== */
+
+/* ==========================================================
+   TREE CANVAS
+   ========================================================== */
+
+.tree-canvas {
+
+    position: relative;
+
+    overflow: auto;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        radial-gradient(circle at center,
+        rgba(0,0,0,.03) 1px,
+        transparent 1px);
+
+    background-size:32px 32px;
+
+}
+
+/* ==========================================================
+   TREE STAGE
+   ========================================================== */
+
+.tree-stage{
+
+    position:relative;
+
+    min-width:2000px;
+    min-height:1200px;
+
+    transform-origin:0 0;
+
+}
+
+/* ==========================================================
+   SVG
+   ========================================================== */
+
+.tree-svg{
+
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    overflow:visible;
+
+    pointer-events:none;
+
+}
+
+/* ==========================================================
+   NODE LAYER
+   ========================================================== */
+
+.tree-nodes{
+
+    position:absolute;
+
+    inset:0;
+
+}
+
+/* ==========================================================
+   TREE NODE
+   ========================================================== */
+
+.tree-node{
+
+    position:absolute;
+
+    width:var(--tree-node-width);
+
+    min-height:var(--tree-node-height);
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    border-radius:var(--radius-lg);
+
+    box-shadow:var(--shadow-sm);
+
+    display:flex;
+
+    gap:var(--space-4);
+
+    align-items:center;
+
+    padding:var(--space-4);
+
+    cursor:pointer;
+
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast),
+        border-color var(--transition-fast);
+
+}
+
+.tree-node:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--shadow-md);
+
+}
+
+/* ==========================================================
+   SELECTED
+   ========================================================== */
+
+.tree-node.selected{
+
+    border:2px solid var(--color-primary);
+
+    box-shadow:
+        0 0 0 4px rgba(45,106,79,.15);
+
+}
+
+/* ==========================================================
+   DECEASED
+   ========================================================== */
+
+.tree-node.deceased{
+
+    opacity:.75;
+
+    filter:grayscale(.2);
+
+}
+
+/* ==========================================================
+   NODE CONTENT
+   ========================================================== */
+
+.tree-node-content{
+
+    flex:1;
+
+}
+
+.tree-node-name{
+
+    font-weight:600;
+
+    font-size:var(--font-size-md);
+
+    line-height:1.3;
+
+}
+
+.tree-node-generation{
+
+    margin-top:4px;
+
+    color:var(--color-text-muted);
+
+    font-size:var(--font-size-sm);
+
+}
+
+/* ==========================================================
+   CONNECTOR
+   ========================================================== */
+
+.tree-line{
+
+    fill:none;
+
+    stroke:var(--color-border);
+
+    stroke-width:2;
+
+    stroke-linecap:round;
+
+    stroke-linejoin:round;
+
+}
+
+/* ==========================================================
+   HIGHLIGHTED CONNECTION
+   ========================================================== */
+
+.tree-line.active{
+
+    stroke:var(--color-primary);
+
+    stroke-width:3;
+
+}
+
+/* ==========================================================
+   MINI MAP
+   ========================================================== */
+
+.mini-map{
+
+    position:absolute;
+
+    right:24px;
+
+    bottom:24px;
+
+    width:220px;
+
+    height:150px;
+
+    background:white;
+
+    border-radius:var(--radius-md);
+
+    border:1px solid var(--color-border);
+
+    box-shadow:var(--shadow-md);
+
+    overflow:hidden;
+
+}
+
+/* ==========================================================
+   MINI MAP VIEWPORT
+   ========================================================== */
+
+.mini-map-viewport{
+
+    position:absolute;
+
+    border:2px solid var(--color-primary);
+
+    background:rgba(45,106,79,.08);
+
+}
+
+/* ==========================================================
+   ZOOM CONTROLS
+   ========================================================== */
+
+.zoom-controls{
+
+    position:absolute;
+
+    left:24px;
+
+    bottom:24px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.zoom-controls button{
+
+    width:44px;
+
+    height:44px;
+
+}
+
+/* ==========================================================
+   NODE MENU
+   ========================================================== */
+
+.node-menu{
+
+    position:absolute;
+
+    top:8px;
+
+    right:8px;
+
+    opacity:0;
+
+    transition:opacity .2s;
+
+}
+
+.tree-node:hover .node-menu{
+
+    opacity:1;
+
+}
+
+/* ==========================================================
+   RELATION BADGES
+   ========================================================== */
+
+.relation-tags{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:4px;
+
+    margin-top:6px;
+
+}
+
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+
+.tree-node{
+
+    animation:fadeIn .3s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(8px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}

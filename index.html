@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Pohon Keluarga Digital">
+
+    <meta
+        name="theme-color"
+        content="#2d6850">
+
+    <title>Pohon Keluarga Kami</title>
+
+    <link
+        rel="icon"
+        href="favicon.ico">
+
+    <link
+        rel="manifest"
+        href="manifest.json">
+
+    <!-- ===================================================== -->
+    <!-- CSS -->
+    <!-- ===================================================== -->
+
+    <link rel="stylesheet" href="assets/css/00-reset.css">
+    <link rel="stylesheet" href="assets/css/01-variables.css">
+    <link rel="stylesheet" href="assets/css/02-base.css">
+    <link rel="stylesheet" href="assets/css/03-layout.css">
+    <link rel="stylesheet" href="assets/css/04-components.css">
+    <link rel="stylesheet" href="assets/css/05-tree.css">
+    <link rel="stylesheet" href="assets/css/06-animations.css">
+    <link rel="stylesheet" href="assets/css/07-dark.css">
+    <link rel="stylesheet" href="assets/css/app.css">
+
+</head>
+
+<body>
+
+<!-- ===================================================== -->
+<!-- HEADER -->
+<!-- ===================================================== -->
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <h1 id="appTitle">
+
+            Pohon Keluarga
+
+        </h1>
+
+        <small id="appVersion">
+
+            v2.0
+
+        </small>
+
+    </div>
+
+    <div
+        id="toolbar"
+        class="toolbar">
+
+        <button
+            id="btnHome"
+            class="btn">
+
+            🏠
+
+        </button>
+
+        <button
+            id="zoomOut"
+            class="btn">
+
+            −
+
+        </button>
+
+        <button
+            id="zoomReset"
+            class="btn">
+
+            100%
+
+        </button>
+
+        <button
+            id="zoomIn"
+            class="btn">
+
+            +
+
+        </button>
+
+        <button
+            id="btnFit"
+            class="btn">
+
+            Fit
+
+        </button>
+
+        <button
+            id="btnCenter"
+            class="btn">
+
+            Center
+
+        </button>
+
+        <button
+            id="btnTheme"
+            class="btn">
+
+            🌙
+
+        </button>
+
+        <button
+            id="btnPrint"
+            class="btn">
+
+            🖨
+
+        </button>
+
+        <button
+            id="btnAddMember"
+            class="btn btn-primary">
+
+            Tambah
+
+        </button>
+
+    </div>
+
+</header>
+
+<!-- ===================================================== -->
+<!-- APPLICATION -->
+<!-- ===================================================== -->
+
+<div class="app-layout">
+
+    <!-- ================================================= -->
+    <!-- SIDEBAR -->
+    <!-- ================================================= -->
+
+    <aside
+        id="sidebar"
+        class="sidebar">
+
+        <div
+            id="sidebarSearch"
+            class="sidebar-search">
+
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="Cari anggota...">
+
+            <select id="generationFilter">
+
+                <option value="">
+
+                    Semua Generasi
+
+                </option>
+
+            </select>
+
+            <p id="memberCount">
+
+                0 Anggota
+
+            </p>
+
+        </div>
+
+        <div
+            id="memberList"
+            class="sidebar-list">
+
+        </div>
+
+    </aside>
+
+    <!-- ================================================= -->
+    <!-- TREE -->
+    <!-- ================================================= -->
+
+    <main
+        id="treeArea"
+        class="tree-area">
+
+        <div
+            id="treeCanvas"
+            class="tree-canvas">
+
+        </div>
+
+    </main>
+
+    <!-- ================================================= -->
+    <!-- DETAIL PANEL -->
+    <!-- ================================================= -->
+
+    <aside
+        id="detailPanel"
+        class="detail-panel">
+
+        <div
+            id="detailContent">
+
+        </div>
+
+    </aside>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- DIALOG -->
+<!-- ===================================================== -->
+
+<dialog
+    id="appDialog"
+    class="dialog">
+
+    <div class="dialog-window">
+
+        <header class="dialog-header">
+
+            <h2 id="dialogTitle">
+
+            </h2>
+
+            <button
+                class="btn"
+                data-close>
+
+                ✕
+
+            </button>
+
+        </header>
+
+        <section
+            id="dialogBody">
+
+        </section>
+
+        <footer
+            id="dialogFooter">
+
+        </footer>
+
+    </div>
+
+</dialog>
+
+<!-- ===================================================== -->
+<!-- LOADING -->
+<!-- ===================================================== -->
+
+<div
+    id="loading"
+    class="loading-overlay hidden">
+
+    <div class="loader">
+
+    </div>
+
+    <p>
+
+        Memuat data keluarga...
+
+    </p>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- TOAST -->
+<!-- ===================================================== -->
+
+<div
+    id="toastContainer"
+    class="toast-container">
+
+</div>
+
+<!-- ===================================================== -->
+<!-- FOOTER -->
+<!-- ===================================================== -->
+
+<footer
+    id="appFooter"
+    class="footer">
+
+    <div>
+
+        © 2026 Pohon Keluarga Kami
+
+    </div>
+
+    <div>
+
+        Dibangun dengan Family Tree v2
+
+    </div>
+
+</footer>
+
+<!-- ===================================================== -->
+<!-- APPLICATION -->
+<!-- ===================================================== -->
+
+<script
+    type="module"
+    src="assets/js/app.js">
+
+</script>
+
+</body>
+</html>

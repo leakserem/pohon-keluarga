@@ -1,0 +1,337 @@
+/* ==========================================================
+   Family Tree v2
+   animations.css
+   Motion & Transitions
+   ========================================================== */
+
+/* ==========================================================
+   FADE IN
+   ========================================================== */
+
+.fade-in {
+    animation: fadeIn .25s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ==========================================================
+   FADE OUT
+   ========================================================== */
+
+.fade-out {
+    animation: fadeOut .2s ease forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* ==========================================================
+   SCALE IN
+   ========================================================== */
+
+.scale-in {
+    animation: scaleIn .22s ease forwards;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ==========================================================
+   SLIDE UP
+   ========================================================== */
+
+.slide-up {
+    animation: slideUp .28s ease forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================
+   SLIDE DOWN
+   ========================================================== */
+
+.slide-down {
+    animation: slideDown .28s ease forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================
+   SLIDE LEFT
+   ========================================================== */
+
+.slide-left {
+    animation: slideLeft .25s ease forwards;
+}
+
+@keyframes slideLeft {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ==========================================================
+   SLIDE RIGHT
+   ========================================================== */
+
+.slide-right {
+    animation: slideRight .25s ease forwards;
+}
+
+@keyframes slideRight {
+    from {
+        opacity: 0;
+        transform: translateX(-24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ==========================================================
+   POP
+   ========================================================== */
+
+.pop {
+    animation: pop .25s ease;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(.95);
+    }
+    60% {
+        transform: scale(1.03);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ==========================================================
+   PULSE
+   ========================================================== */
+
+.pulse {
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(45,106,79,.25);
+    }
+    70% {
+        box-shadow: 0 0 0 14px rgba(45,106,79,0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(45,106,79,0);
+    }
+}
+
+/* ==========================================================
+   SHAKE
+   ========================================================== */
+
+.shake {
+    animation: shake .35s;
+}
+
+@keyframes shake {
+    0%,100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-4px);
+    }
+    40% {
+        transform: translateX(4px);
+    }
+    60% {
+        transform: translateX(-3px);
+    }
+    80% {
+        transform: translateX(3px);
+    }
+}
+
+/* ==========================================================
+   SPINNER
+   ========================================================== */
+
+.rotate {
+    animation: rotate .8s linear infinite;
+}
+
+@keyframes rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+
+.sidebar {
+    transition:
+        transform var(--transition-normal),
+        left var(--transition-normal);
+}
+
+/* ==========================================================
+   DETAIL PANEL
+   ========================================================== */
+
+.detail-panel {
+    transition:
+        width var(--transition-normal),
+        opacity var(--transition-normal);
+}
+
+/* ==========================================================
+   TREE NODE
+   ========================================================== */
+
+.tree-node {
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease,
+        border-color .15s ease,
+        background .15s ease;
+}
+
+/* ==========================================================
+   TREE STAGE
+   ========================================================== */
+
+.tree-stage {
+    transition:
+        transform .15s linear;
+}
+
+/* ==========================================================
+   SVG CONNECTIONS
+   ========================================================== */
+
+.tree-line {
+    transition:
+        stroke .2s ease,
+        stroke-width .2s ease;
+}
+
+/* ==========================================================
+   BUTTON
+   ========================================================== */
+
+button {
+    transition:
+        background .15s ease,
+        color .15s ease,
+        transform .15s ease,
+        border-color .15s ease,
+        box-shadow .15s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+/* ==========================================================
+   INPUT
+   ========================================================== */
+
+input,
+textarea,
+select {
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+}
+
+/* ==========================================================
+   TOAST
+   ========================================================== */
+
+.toast {
+    animation:
+        slideLeft .25s ease,
+        fadeIn .25s ease;
+}
+
+/* ==========================================================
+   DIALOG
+   ========================================================== */
+
+.dialog {
+    animation:
+        scaleIn .22s ease;
+}
+
+/* ==========================================================
+   ACCESSIBILITY
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+
+    }
+
+}

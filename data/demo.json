@@ -1,0 +1,120 @@
+{
+  "app": {
+    "name": "Family Tree v2",
+    "version": "2.0.0"
+  },
+  "members": [
+    {
+      "id": "P001",
+      "name": "I Gusti Ngurah Rai",
+      "gender": "male",
+      "birthDate": "1940-05-12",
+      "deathDate": "",
+      "generation": 1,
+      "father": null,
+      "mother": null,
+      "spouse": "P002",
+      "children": [
+        "P003",
+        "P004"
+      ],
+      "photo": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "notes": ""
+    },
+    {
+      "id": "P002",
+      "name": "Ni Luh Sri",
+      "gender": "female",
+      "birthDate": "1945-08-21",
+      "deathDate": "",
+      "generation": 1,
+      "father": null,
+      "mother": null,
+      "spouse": "P001",
+      "children": [
+        "P003",
+        "P004"
+      ],
+      "photo": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "notes": ""
+    },
+    {
+      "id": "P003",
+      "name": "Made Wijaya",
+      "gender": "male",
+      "birthDate": "1970-01-15",
+      "deathDate": "",
+      "generation": 2,
+      "father": "P001",
+      "mother": "P002",
+      "spouse": "P005",
+      "children": [
+        "P006"
+      ],
+      "photo": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "notes": ""
+    },
+    {
+      "id": "P004",
+      "name": "Ketut Dewi",
+      "gender": "female",
+      "birthDate": "1974-11-02",
+      "deathDate": "",
+      "generation": 2,
+      "father": "P001",
+      "mother": "P002",
+      "spouse": null,
+      "children": [],
+      "photo": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "notes": ""
+    },
+    {
+      "id": "P005",
+      "name": "Komang Sari",
+      "gender": "female",
+      "birthDate": "1973-07-09",
+      "deathDate": "",
+      "generation": 2,
+      "father": null,
+      "mother": null,
+      "spouse": "P003",
+      "children": [
+        "P006"
+      ],
+      "photo": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "notes": ""
+    },
+    {
+      "id": "P006",
+      "name": "Putu Adi",
+      "gender": "male",
+      "birthDate": "2001-03-18",
+      "deathDate": "",
+      "generation": 3,
+      "father": "P003",
+      "mother": "P005",
+      "spouse": null,
+      "children": [],
+      "photo": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "notes": ""
+    }
+  ]
+}

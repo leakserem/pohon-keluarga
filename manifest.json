@@ -1,0 +1,26 @@
+{
+  "name": "Family Tree v2",
+  "short_name": "FamilyTree",
+  "description": "Aplikasi Pohon Keluarga berbasis HTML, CSS, dan JavaScript.",
+  "version": "2.0.0",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

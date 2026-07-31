@@ -1,0 +1,564 @@
+/* ==========================================================
+   Family Tree v2
+   04-components.css
+   UI Components
+   ========================================================== */
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+
+    padding:.7rem 1rem;
+
+    border:none;
+    border-radius:12px;
+
+    background:var(--color-surface);
+
+    color:var(--color-text);
+
+    font:inherit;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    user-select:none;
+}
+
+.btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--shadow-md);
+
+}
+
+.btn:active{
+
+    transform:translateY(0);
+
+}
+
+.btn-primary{
+
+    background:var(--color-primary);
+
+    color:#fff;
+
+}
+
+.btn-primary:hover{
+
+    background:var(--color-primary-dark);
+
+}
+
+.btn-danger{
+
+    background:var(--color-danger);
+
+    color:#fff;
+
+}
+
+/* ==========================================================
+   INPUT
+   ========================================================== */
+
+input,
+textarea,
+select{
+
+    width:100%;
+
+    padding:.75rem 1rem;
+
+    border:1px solid var(--color-border);
+
+    border-radius:12px;
+
+    background:var(--color-surface);
+
+    color:var(--color-text);
+
+    font:inherit;
+
+    transition:.25s;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+    outline:none;
+
+    border-color:var(--color-primary);
+
+    box-shadow:0 0 0 4px rgba(45,104,80,.12);
+
+}
+
+textarea{
+
+    resize:vertical;
+
+}
+
+/* ==========================================================
+   PANEL
+   ========================================================== */
+
+.panel{
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    border-radius:18px;
+
+    padding:1.25rem;
+
+    box-shadow:var(--shadow-sm);
+
+}
+
+.panel h3{
+
+    margin-bottom:1rem;
+
+}
+
+/* ==========================================================
+   CARD
+   ========================================================== */
+
+.card{
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    border-radius:18px;
+
+    padding:1.25rem;
+
+    box-shadow:var(--shadow-sm);
+
+}
+
+/* ==========================================================
+   TREE NODE
+   ========================================================== */
+
+.tree-node{
+
+    position:absolute;
+
+    width:220px;
+
+    min-height:120px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    cursor:pointer;
+
+    transition:
+        transform .25s,
+        box-shadow .25s,
+        border-color .25s;
+
+    box-shadow:var(--shadow-sm);
+
+}
+
+.tree-node:hover{
+
+    transform:translateY(-4px);
+
+    border-color:var(--color-primary);
+
+    box-shadow:var(--shadow-lg);
+
+}
+
+.tree-node.selected{
+
+    border-color:var(--color-primary);
+
+    box-shadow:
+        0 0 0 4px rgba(45,104,80,.12),
+        var(--shadow-lg);
+
+}
+
+/* ==========================================================
+   NODE HEADER
+   ========================================================== */
+
+.tree-node-header{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:14px;
+
+}
+
+.tree-avatar{
+
+    width:52px;
+
+    height:52px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    flex-shrink:0;
+
+    background:linear-gradient(
+        135deg,
+        var(--color-primary),
+        var(--color-secondary)
+    );
+
+    color:#fff;
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+.tree-title{
+
+    flex:1;
+
+}
+
+.tree-title h3{
+
+    margin:0;
+
+    font-size:16px;
+
+    line-height:1.2;
+
+}
+
+.tree-title small{
+
+    display:block;
+
+    margin-top:4px;
+
+    color:var(--color-text-muted);
+
+}
+
+/* ==========================================================
+   NODE BODY
+   ========================================================== */
+
+.tree-node-body{
+
+    flex:1;
+
+    padding:0 14px 14px;
+
+}
+
+.tree-notes{
+
+    font-size:13px;
+
+    color:var(--color-text-light);
+
+    line-height:1.5;
+
+}
+
+.tree-empty{
+
+    color:var(--color-text-muted);
+
+    font-style:italic;
+
+}
+
+/* ==========================================================
+   NODE FOOTER
+   ========================================================== */
+
+.tree-node-footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:10px 14px;
+
+    border-top:1px solid var(--color-border);
+
+    background:rgba(0,0,0,.02);
+
+}
+
+.tree-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:4px;
+
+    padding:.3rem .55rem;
+
+    border-radius:999px;
+
+    background:rgba(45,104,80,.08);
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+/* ==========================================================
+   DETAIL PANEL
+   ========================================================== */
+
+.detail-card{
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    border-radius:18px;
+
+    padding:1.5rem;
+
+}
+
+.detail-card h2{
+
+    margin-bottom:.5rem;
+
+}
+
+/* ==========================================================
+   DIALOG
+   ========================================================== */
+
+dialog{
+
+    width:min(650px,90vw);
+
+    border:none;
+
+    border-radius:20px;
+
+    padding:0;
+
+    overflow:hidden;
+
+    box-shadow:var(--shadow-lg);
+
+}
+
+dialog form{
+
+    padding:2rem;
+
+}
+
+dialog menu{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+
+    margin-top:1.5rem;
+
+}
+
+/* ==========================================================
+   TOAST
+   ========================================================== */
+
+.toast-container{
+
+    position:fixed;
+
+    right:24px;
+
+    bottom:24px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+    z-index:5000;
+
+}
+
+.toast{
+
+    min-width:260px;
+
+    padding:14px 18px;
+
+    border-radius:14px;
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    box-shadow:var(--shadow-lg);
+
+    animation:toast-in .25s ease;
+
+}
+
+/* ==========================================================
+   LOADER
+   ========================================================== */
+
+.loading-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:20px;
+
+    background:rgba(255,255,255,.75);
+
+    backdrop-filter:blur(4px);
+
+    z-index:9999;
+
+}
+
+.loading-overlay.hidden{
+
+    display:none;
+
+}
+
+.loader{
+
+    width:52px;
+
+    height:52px;
+
+    border-radius:50%;
+
+    border:4px solid rgba(0,0,0,.1);
+
+    border-top-color:var(--color-primary);
+
+    animation:spin .9s linear infinite;
+
+}
+
+/* ==========================================================
+   PERSON TAG
+   ========================================================== */
+
+.person-tag{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    padding:.45rem .8rem;
+
+    border-radius:999px;
+
+    background:rgba(45,104,80,.08);
+
+    color:var(--color-primary);
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+/* ==========================================================
+   EMPTY STATE
+   ========================================================== */
+
+.empty-state{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:4rem 2rem;
+
+    text-align:center;
+
+    color:var(--color-text-muted);
+
+}
+
+.empty-state svg{
+
+    width:72px;
+
+    height:72px;
+
+    margin-bottom:1rem;
+
+    opacity:.4;
+
+}
