@@ -156,59 +156,123 @@ textarea{
 
 /* ==========================================================
    TREE NODE
-   ========================================================== */
+========================================================== */
 
-.tree-node{
+.tree-node {
 
-    position:absolute;
+    position: absolute;
 
-    width:220px;
+    width: 220px;
 
-    min-height:120px;
+    min-height: 110px;
 
-    display:flex;
+    background: var(--color-surface);
 
-    flex-direction:column;
+    border: 1px solid var(--color-border);
 
-    background:var(--color-surface);
+    border-radius: 14px;
 
-    border:1px solid var(--color-border);
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
 
-    border-radius:18px;
+    overflow: hidden;
 
-    overflow:hidden;
+    cursor: pointer;
 
-    cursor:pointer;
-
-    transition:
-        transform .25s,
-        box-shadow .25s,
-        border-color .25s;
-
-    box-shadow:var(--shadow-sm);
+    transition: .25s;
 
 }
 
-.tree-node:hover{
+.tree-node:hover {
 
-    transform:translateY(-4px);
+    transform: translateY(-4px);
 
-    border-color:var(--color-primary);
-
-    box-shadow:var(--shadow-lg);
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
 
 }
 
-.tree-node.selected{
+.node-header {
 
-    border-color:var(--color-primary);
+    display: flex;
 
-    box-shadow:
-        0 0 0 4px rgba(45,104,80,.12),
-        var(--shadow-lg);
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 14px;
+
+    background: var(--color-primary);
+
+    color: white;
 
 }
 
+.node-avatar {
+
+    width: 56px;
+
+    height: 56px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.18);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    font-size: 26px;
+
+}
+
+.node-avatar img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+}
+
+.node-title h3 {
+
+    margin: 0;
+
+    font-size: 17px;
+
+}
+
+.node-title small {
+
+    opacity: .8;
+
+}
+
+.node-body {
+
+    display: grid;
+
+    grid-template-columns: repeat(2,1fr);
+
+    gap: 12px;
+
+    padding: 14px;
+
+    font-size: 13px;
+
+}
+
+.node-body strong {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+}
 /* ==========================================================
    NODE HEADER
    ========================================================== */
