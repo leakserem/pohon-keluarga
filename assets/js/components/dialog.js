@@ -2,191 +2,265 @@
  * ==========================================================
  * Family Tree v2
  * dialog.js
- * Universal Dialog Manager
  * ==========================================================
  */
 
-class DialogManager {
+const dialog = document.querySelector("#memberDialog");
+const title = document.querySelector("#dialogTitle");
+const body = document.querySelector("#dialogBody");
+const footer = document.querySelector("#dialogFooter");
 
-    constructor() {
+/* ==========================================================
+   DIALOG
+========================================================== */
 
-        this.dialog = document.querySelector("#appDialog");
+export const Dialog = {
 
-        this.title = document.querySelector("#dialogTitle");
+    openAddMember,
 
-        this.body = document.querySelector("#dialogBody");
+    close,
 
-        this.footer = document.querySelector("#dialogFooter");
+    initialize
 
-        this.bind();
+};
 
-    }
+/* ==========================================================
+   INIT
+========================================================== */
 
-    bind() {
+export function initialize() {
 
-        if (!this.dialog) return;
+    dialog?.addEventListener("click", event => {
 
-        this.dialog.addEventListener("click", e => {
+        if (event.target.hasAttribute("data-close")) {
 
-            if (e.target === this.dialog) {
-
-                this.close();
-
-            }
-
-        });
-
-        this.dialog
-            .querySelector("[data-close]")
-            ?.addEventListener("click", () => {
-
-                this.close();
-
-            });
-
-    }
-
-    /* ==========================================
-       OPEN
-    ========================================== */
-
-    open(options = {}) {
-
-        this.title.textContent = options.title || "";
-
-        this.body.innerHTML = "";
-
-        this.footer.innerHTML = "";
-
-        if (typeof options.content === "string") {
-
-            this.body.innerHTML = options.content;
+            close();
 
         }
 
-        else if (options.content instanceof HTMLElement) {
-
-            this.body.appendChild(options.content);
-
-        }
-
-        (options.actions || []).forEach(action => {
-
-            const button = document.createElement("button");
-
-            button.className =
-                action.className || "btn";
-
-            button.textContent = action.label;
-
-            button.addEventListener("click", () => {
-
-                if (action.onClick) {
-
-                    action.onClick();
-
-                }
-
-            });
-
-            this.footer.appendChild(button);
-
-        });
-
-        this.dialog.showModal();
-
-    }
-
-    /* ==========================================
-       ALERT
-    ========================================== */
-
-    alert(title, message) {
-
-        this.open({
-
-            title,
-
-            content: `<p>${message}</p>`,
-
-            actions: [
-
-                {
-
-                    label: "OK",
-
-                    className: "btn btn-primary",
-
-                    onClick: () => this.close()
-
-                }
-
-            ]
-
-        });
-
-    }
-
-    /* ==========================================
-       CONFIRM
-    ========================================== */
-
-    confirm(title, message, callback) {
-
-        this.open({
-
-            title,
-
-            content: `<p>${message}</p>`,
-
-            actions: [
-
-                {
-
-                    label: "Batal",
-
-                    className: "btn",
-
-                    onClick: () => this.close()
-
-                },
-
-                {
-
-                    label: "Ya",
-
-                    className: "btn btn-danger",
-
-                    onClick: () => {
-
-                        this.close();
-
-                        callback?.();
-
-                    }
-
-                }
-
-            ]
-
-        });
-
-    }
-
-    /* ==========================================
-       CLOSE
-    ========================================== */
-
-    close() {
-
-        if (this.dialog.open) {
-
-            this.dialog.close();
-
-        }
-
-    }
+    });
 
 }
 
-export const Dialog = new DialogManager();
+/* ==========================================================
+   OPEN
+========================================================== */
+
+export function openAddMember() {
+
+    if (!dialog) return;
+
+    title.textContent = "Tambah Anggota";
+
+    body.innerHTML = createMemberForm();
+
+    footer.innerHTML = `
+
+        <button
+            id="btnCancelMember"
+            class="btn">
+
+            Batal
+
+        </button>
+
+        <button
+            id="btnSaveMember"
+            class="btn btn-primary">
+
+            Simpan
+
+        </button>
+
+    `;
+
+    footer.querySelector("#btnCancelMember")
+        .addEventListener("click", close);
+
+    footer.querySelector("#btnSaveMember")
+        .addEventListener("click", saveMember);
+
+    dialog.showModal();
+
+}
+
+/* ==========================================================
+   CLOSE
+========================================================== */
+
+export function close() {
+
+    dialog.close();
+
+}
+
+/* ==========================================================
+   SAVE
+========================================================== */
+
+function saveMember() {
+
+    const data = {
+
+        id: crypto.randomUUID(),
+
+        fullName:
+
+            document.querySelector("#memberName").value,
+
+        gender:
+
+            document.querySelector("#memberGender").value,
+
+        birthDate:
+
+            document.querySelector("#memberBirth").value,
+
+        generation:
+
+            Number(
+
+                document.querySelector("#memberGeneration").value
+
+            ),
+
+        fatherId:
+
+            document.querySelector("#memberFather").value,
+
+        motherId:
+
+            document.querySelector("#memberMother").value,
+
+        spouseId:
+
+            document.querySelector("#memberSpouse").value,
+
+        photo:
+
+            document.querySelector("#memberPhoto").value
+
+    };
+
+    console.log(
+
+        "New Member",
+
+        data
+
+    );
+
+    close();
+
+}
+
+/* ==========================================================
+   FORM
+========================================================== */
+
+function createMemberForm() {
+
+    return `
+
+<div class="form-grid">
+
+<label>
+
+Nama Lengkap
+
+<input
+id="memberName"
+type="text">
+
+</label>
+
+<label>
+
+Jenis Kelamin
+
+<select id="memberGender">
+
+<option value="male">
+
+Laki-laki
+
+</option>
+
+<option value="female">
+
+Perempuan
+
+</option>
+
+</select>
+
+</label>
+
+<label>
+
+Tanggal Lahir
+
+<input
+id="memberBirth"
+type="date">
+
+</label>
+
+<label>
+
+Generasi
+
+<input
+id="memberGeneration"
+type="number"
+min="1"
+value="1">
+
+</label>
+
+<label>
+
+Ayah
+
+<input
+id="memberFather"
+type="text">
+
+</label>
+
+<label>
+
+Ibu
+
+<input
+id="memberMother"
+type="text">
+
+</label>
+
+<label>
+
+Pasangan
+
+<input
+id="memberSpouse"
+type="text">
+
+</label>
+
+<label>
+
+Foto
+
+<input
+id="memberPhoto"
+type="text"
+placeholder="uploads/photos/...">
+
+</label>
+
+</div>
+
+`;
+
+}
