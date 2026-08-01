@@ -2,97 +2,81 @@
  * ==========================================================
  * Family Tree v2
  * store.js
- * Reactive State Manager
+ * Version 2.0
  * ==========================================================
  */
 
-const state = {
+const listeners = [];
 
-    /* ===========================
-       DATA
-    =========================== */
+export const Store = {
 
     people: [],
-
-    selectedPerson: null,
 
     search: "",
 
     generationFilter: "",
 
-    loading: false,
-
-    error: null
-
-};
-
-/* ==========================================================
-   OBSERVER
-========================================================== */
-
-const listeners = new Set();
-
-function notify() {
-
-    listeners.forEach(callback => {
-
-        callback(getState());
-
-    });
-
-}
-
-/* ==========================================================
-   PUBLIC
-========================================================== */
-
-export function initializeStore() {
-
-    state.people = [];
-
-    state.selectedPerson = null;
-
-    state.search = "";
-
-    state.generationFilter = "";
-
-    state.loading = false;
-
-    state.error = null;
-
-}
-
-/* ==========================================================
-   SUBSCRIBE
-========================================================== */
-
-export const Store = {
+    selectedMember: null,
 
     subscribe(callback) {
 
-        listeners.add(callback);
+        if (typeof callback === "function") {
 
-        callback(getState());
+            listeners.push(callback);
 
-        return () => listeners.delete(callback);
+        }
 
     },
 
-    get(key) {
+    notify() {
 
-        return state[key];
+        listeners.forEach(callback => callback());
+
+    },
+
+    setPeople(people) {
+
+        this.people = Array.isArray(people)
+            ? people
+            : [];
+
+        this.notify();
+
+    },
+
+    setSearch(text) {
+
+        this.search = text.trim().toLowerCase();
+
+        this.notify();
+
+    },
+
+    setGenerationFilter(generation) {
+
+        this.generationFilter = generation;
+
+        this.notify();
+
+    },
+
+    setSelectedMember(member) {
+
+        this.selectedMember = member;
+
+        this.notify();
 
     }
 
 };
 
 /* ==========================================================
-   STATE
+   SEARCH
 ========================================================== */
 
-export function getState() {
+export function setSearch(value) {
 
-    return structuredClone(state);
+    Store.setSearch(value);
 
 }
 
@@ -100,31 +84,15 @@ export function getState() {
    PEOPLE
 ========================================================== */
 
-export function setPeople(people = []) {
+export function setPeople(people) {
 
-    state.people = Array.isArray(people)
-
-        ? people
-
-        : [];
-
-    notify();
+    Store.setPeople(people);
 
 }
 
 export function getPeople() {
 
-    return state.people;
-
-}
-
-export function getPerson(id) {
-
-    return state.people.find(
-
-        person => person.id === id
-
-    );
+    return Store.people;
 
 }
 
@@ -132,171 +100,44 @@ export function getPerson(id) {
    FILTER
 ========================================================== */
 
-export function setSearch(value = "") {
-
-    state.search = value.trim();
-
-    notify();
-
-}
-
-export function setGenerationFilter(value = "") {
-
-    state.generationFilter = value;
-
-    notify();
-
-}
-
 export function getFilteredPeople() {
 
-    let people = [...state.people];
+    return Store.people.filter(person => {
 
-    if (state.search) {
+        const matchSearch =
 
-        const keyword = state.search.toUpperCase();
+            !Store.search ||
 
-        people = people.filter(person => {
+            (person.name || "")
+                .toLowerCase()
+                .includes(Store.search);
 
-            return (
+        const matchGeneration =
 
-                person.fullName
+            !Store.generationFilter ||
 
-                    .toUpperCase()
+            String(person.generation) ===
+            String(Store.generationFilter);
 
-                    .includes(keyword)
+        return matchSearch && matchGeneration;
 
-                ||
-
-                String(person.generation)
-
-                    .includes(keyword)
-
-            );
-
-        });
-
-    }
-
-    if (state.generationFilter) {
-
-        people = people.filter(person =>
-
-            String(person.generation)
-
-            === String(state.generationFilter)
-
-        );
-
-    }
-
-    return people;
+    });
 
 }
 
 /* ==========================================================
-   SELECT
+   MEMBER
 ========================================================== */
 
-export function selectPerson(id) {
+export function selectMember(member) {
 
-    state.selectedPerson =
-
-        getPerson(id) || null;
-
-    notify();
+    Store.setSelectedMember(member);
 
 }
 
-export function clearSelection() {
+export function getSelectedMember() {
 
-    state.selectedPerson = null;
-
-    notify();
-
-}
-
-/* ==========================================================
-   CRUD
-========================================================== */
-
-export function addPerson(person) {
-
-    state.people.push(person);
-
-    notify();
-
-}
-
-export function updatePerson(id, data) {
-
-    const person = getPerson(id);
-
-    if (!person) return;
-
-    Object.assign(person, data);
-
-    notify();
-
-}
-
-export function removePerson(id) {
-
-    state.people = state.people.filter(
-
-        person => person.id !== id
-
-    );
-
-    if (
-
-        state.selectedPerson &&
-
-        state.selectedPerson.id === id
-
-    ) {
-
-        state.selectedPerson = null;
-
-    }
-
-    notify();
-
-}
-
-/* ==========================================================
-   LOADING
-========================================================== */
-
-export function setLoading(value) {
-
-    state.loading = !!value;
-
-    notify();
-
-}
-
-export function isLoading() {
-
-    return state.loading;
-
-}
-
-/* ==========================================================
-   ERROR
-========================================================== */
-
-export function setError(message = null) {
-
-    state.error = message;
-
-    notify();
-
-}
-
-export function getError() {
-
-    return state.error;
+    return Store.selectedMember;
 
 }
 
@@ -306,8 +147,14 @@ export function getError() {
 
 export function resetStore() {
 
-    initializeStore();
+    Store.people = [];
 
-    notify();
+    Store.search = "";
+
+    Store.generationFilter = "";
+
+    Store.selectedMember = null;
+
+    Store.notify();
 
 }
