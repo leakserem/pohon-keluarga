@@ -14,10 +14,10 @@ import {
 } from "./treeCanvas.js";
 
 import {
-    DIALOG
+    Dialog
 } from "./dialog.js";
 
-const HTML = document.documentElement;
+const html = document.documentElement;
 
 /* ==========================================================
    PUBLIC
@@ -41,27 +41,27 @@ export function initializeToolbar() {
 
 function bindZoom() {
 
-    SELECT("#zoomIn")?.addEventListener(
+    $("#zoomIn")?.addEventListener(
         "click",
         zoomIn
     );
 
-    SELECT("#zoomOut")?.addEventListener(
+    $("#zoomOut")?.addEventListener(
         "click",
         zoomOut
     );
 
-    SELECT("#zoomReset")?.addEventListener(
+    $("#zoomReset")?.addEventListener(
         "click",
         resetZoom
     );
 
-    SELECT("#btnCenter")?.addEventListener(
+    $("#btnCenter")?.addEventListener(
         "click",
         centerTree
     );
 
-    SELECT("#btnFit")?.addEventListener(
+    $("#btnFit")?.addEventListener(
         "click",
         fitTree
     );
@@ -74,7 +74,7 @@ function bindZoom() {
 
 function bindTheme() {
 
-    SELECT("#btnTheme")?.addEventListener(
+    $("#btnTheme")?.addEventListener(
         "click",
         toggleTheme
     );
@@ -83,13 +83,13 @@ function bindTheme() {
 
 function toggleTheme() {
 
-    HTML.classList.toggle("dark");
+    html.classList.toggle("dark");
 
-    const IS_DARK = HTML.classList.contains("dark");
+    const dark = html.classList.contains("dark");
 
     localStorage.setItem(
         "familyTree.theme",
-        IS_DARK ? "dark" : "light"
+        dark ? "dark" : "light"
     );
 
 }
@@ -100,7 +100,7 @@ function toggleTheme() {
 
 function bindPrint() {
 
-    SELECT("#btnPrint")?.addEventListener(
+    $("#btnPrint")?.addEventListener(
         "click",
         () => window.print()
     );
@@ -113,50 +113,44 @@ function bindPrint() {
 
 function bindNavigation() {
 
-    SELECT("#btnHome")?.addEventListener(
+    $("#btnHome")?.addEventListener(
         "click",
         () => {
 
             document.dispatchEvent(
-
                 new CustomEvent("route:tree")
-
             );
 
         }
     );
 
-    SELECT("#btnTimeline")?.addEventListener(
+    $("#btnTimeline")?.addEventListener(
         "click",
         () => {
 
             document.dispatchEvent(
-
                 new CustomEvent("route:timeline")
-
             );
 
         }
     );
 
-    SELECT("#btnStatistics")?.addEventListener(
+    $("#btnStatistics")?.addEventListener(
         "click",
         () => {
 
             document.dispatchEvent(
-
                 new CustomEvent("route:statistics")
-
             );
 
         }
     );
 
-    SELECT("#btnAddMember")?.addEventListener(
+    $("#btnAddMember")?.addEventListener(
         "click",
         () => {
 
-            DIALOG.openAddMember();
+            Dialog.openAddMember();
 
         }
     );
@@ -167,8 +161,8 @@ function bindNavigation() {
    HELPERS
 ========================================================== */
 
-function SELECT(SELECTOR) {
+function $(selector) {
 
-    return document.querySelector(SELECTOR);
+    return document.querySelector(selector);
 
 }
