@@ -2,18 +2,11 @@
  * ==========================================================
  * Family Tree v2
  * detailPanel.js
+ * Version 2.0
  * ==========================================================
  */
 
-import {
-    Store,
-    getPerson,
-    getPeople,
-    selectPerson
-} from "../store.js";
-
-const panel = document.querySelector("#detailPanel");
-const content = document.querySelector("#detailContent");
+const panel = document.querySelector("#detailContent");
 
 /* ==========================================================
    PUBLIC
@@ -21,53 +14,27 @@ const content = document.querySelector("#detailContent");
 
 export function initializeDetailPanel() {
 
-    renderEmpty();
+    bindEvents();
 
-    Store.subscribe(state => {
-
-        render(state.selectedPerson);
-
-    });
+    showEmpty();
 
 }
 
 /* ==========================================================
-   RENDER
+   EVENTS
 ========================================================== */
 
-function render(person) {
+function bindEvents() {
 
-    if (!content) return;
+    document.addEventListener(
 
-    if (!person) {
+        "member:selected",
 
-        renderEmpty();
+        event => {
 
-        return;
+            renderMember(event.detail);
 
-    }
-
-    const parents = findParents(person);
-
-    const partners = findPartners(person);
-
-    const children = findChildren(person);
-
-    content.innerHTML = "";
-
-    content.append(
-
-        createProfile(person),
-
-        createSection("Orang Tua", parents),
-
-        createSection("Pasangan", partners),
-
-        createSection("Anak", children),
-
-        createNotes(person),
-
-        createActions(person)
+        }
 
     );
 
@@ -77,15 +44,15 @@ function render(person) {
    EMPTY
 ========================================================== */
 
-function renderEmpty() {
+function showEmpty() {
 
-    if (!content) return;
+    if (!panel) return;
 
-    content.innerHTML = `
+    panel.innerHTML = `
 
-        <div class="empty-state">
+        <div class="detail-empty">
 
-            <h3>Pilih Anggota</h3>
+            <h3>Belum Ada Anggota Dipilih</h3>
 
             <p>
 
@@ -101,241 +68,135 @@ function renderEmpty() {
 }
 
 /* ==========================================================
-   PROFILE
+   MEMBER
 ========================================================== */
 
-function createProfile(person) {
+function renderMember(person) {
 
-    const card = document.createElement("section");
+    if (!panel) return;
 
-    card.className = "detail-card";
+    panel.innerHTML = `
 
-    card.innerHTML = `
+        <div class="detail-card">
 
-        <div class="detail-header">
+            <div class="detail-photo">
 
-            <div class="tree-avatar">
-
-                ${initial(person.fullName)}
-
-            </div>
-
-            <div>
-
-                <h2>${escapeHtml(person.fullName)}</h2>
-
-                <p>Generasi ${person.generation}</p>
-
-                <small>ID : ${person.id}</small>
+                ${
+                    person.photo
+                        ? `<img src="${person.photo}" alt="${person.name}">`
+                        : `<div class="detail-avatar">👤</div>`
+                }
 
             </div>
+
+            <h2>
+
+                ${person.name || "-"}
+
+            </h2>
+
+            <table class="detail-table">
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <td>${person.id || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Jenis Kelamin</th>
+
+                    <td>${person.gender || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Lahir</th>
+
+                    <td>${person.birth || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Wafat</th>
+
+                    <td>${person.death || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Generasi</th>
+
+                    <td>${person.generation || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Ayah / Ibu</th>
+
+                    <td>${person.parentIds || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Pasangan</th>
+
+                    <td>${person.spouseIds || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Alamat</th>
+
+                    <td>${person.address || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Pekerjaan</th>
+
+                    <td>${person.job || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Catatan</th>
+
+                    <td>${person.notes || "-"}</td>
+
+                </tr>
+
+            </table>
 
         </div>
 
     `;
 
-    return card;
-
 }
 
 /* ==========================================================
-   SECTION
+   PUBLIC API
 ========================================================== */
 
-function createSection(title, list) {
+export function clearDetailPanel() {
 
-    const section = document.createElement("section");
-
-    section.className = "detail-section";
-
-    const h3 = document.createElement("h3");
-
-    h3.textContent = title;
-
-    section.appendChild(h3);
-
-    if (!list.length) {
-
-        const empty = document.createElement("p");
-
-        empty.className = "detail-empty";
-
-        empty.textContent = "Belum ada data.";
-
-        section.appendChild(empty);
-
-        return section;
-
-    }
-
-    list.forEach(person => {
-
-        const button = document.createElement("button");
-
-        button.className = "person-tag";
-
-        button.textContent = person.fullName;
-
-        button.onclick = () => {
-
-            selectPerson(person.id);
-
-        };
-
-        section.appendChild(button);
-
-    });
-
-    return section;
+    showEmpty();
 
 }
 
-/* ==========================================================
-   NOTES
-========================================================== */
+export function showMemberDetail(person) {
 
-function createNotes(person) {
-
-    const section = document.createElement("section");
-
-    section.className = "detail-section";
-
-    section.innerHTML = `
-
-        <h3>Catatan</h3>
-
-        <p>
-
-            ${escapeHtml(
-                person.notes || "Tidak ada catatan."
-            )}
-
-        </p>
-
-    `;
-
-    return section;
-
-}
-
-/* ==========================================================
-   ACTIONS
-========================================================== */
-
-function createActions(person) {
-
-    const div = document.createElement("div");
-
-    div.className = "detail-actions";
-
-    const edit = document.createElement("button");
-
-    edit.className = "btn btn-primary";
-
-    edit.textContent = "Edit";
-
-    edit.onclick = () => {
-
-        console.log("Edit", person.id);
-
-    };
-
-    const center = document.createElement("button");
-
-    center.className = "btn";
-
-    center.textContent = "Pusatkan Pohon";
-
-    center.onclick = () => {
-
-        document.dispatchEvent(
-
-            new CustomEvent("tree:center",{
-
-                detail:person.id
-
-            })
-
-        );
-
-    };
-
-    div.append(edit, center);
-
-    return div;
-
-}
-
-/* ==========================================================
-   HELPERS
-========================================================== */
-
-function findParents(person) {
-
-    if (!person.parentIds) return [];
-
-    return person.parentIds
-
-        .split(",")
-
-        .map(id => getPerson(id.trim()))
-
-        .filter(Boolean);
-
-}
-
-function findPartners(person) {
-
-    if (!person.partnerIds) return [];
-
-    return person.partnerIds
-
-        .split(",")
-
-        .map(id => getPerson(id.trim()))
-
-        .filter(Boolean);
-
-}
-
-function findChildren(person) {
-
-    return getPeople().filter(child => {
-
-        if (!child.parentIds) return false;
-
-        return child.parentIds
-
-            .split(",")
-
-            .includes(person.id);
-
-    });
-
-}
-
-function initial(name) {
-
-    return name
-
-        .split(" ")
-
-        .slice(0,2)
-
-        .map(word => word[0])
-
-        .join("")
-
-        .toUpperCase();
-
-}
-
-function escapeHtml(text="") {
-
-    const div=document.createElement("div");
-
-    div.textContent=text;
-
-    return div.innerHTML;
+    renderMember(person);
 
 }
