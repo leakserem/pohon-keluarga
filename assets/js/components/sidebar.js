@@ -2,22 +2,25 @@
  * ==========================================================
  * Family Tree v2
  * sidebar.js
+ * Version 2.0
  * ==========================================================
  */
 
 import {
+
     Store,
-    getFilteredPeople,
-    setSearch,
-    setGenerationFilter,
-    selectPerson
+    getFilteredPeople
+
 } from "../store.js";
 
-const sidebar = document.querySelector("#sidebar");
-const searchInput = document.querySelector("#searchInput");
-const generationSelect = document.querySelector("#generationFilter");
-const memberList = document.querySelector("#memberList");
-const memberCount = document.querySelector("#memberCount");
+const memberList =
+    document.querySelector("#memberList");
+
+const memberCount =
+    document.querySelector("#memberCount");
+
+const generationFilter =
+    document.querySelector("#generationFilter");
 
 /* ==========================================================
    PUBLIC
@@ -27,177 +30,9 @@ export function initializeSidebar() {
 
     bindEvents();
 
-    render();
+    populateGenerationFilter();
 
-    Store.subscribe(() => {
-
-        render();
-
-    });
-
-}
-
-/* ==========================================================
-   RENDER
-========================================================== */
-
-function render() {
-
-    renderStatistics();
-
-    renderGeneration();
-
-    renderMemberList();
-
-}
-
-/* ==========================================================
-   STATISTICS
-========================================================== */
-
-function renderStatistics() {
-
-    const people = getFilteredPeople();
-
-    if (memberCount) {
-
-        memberCount.textContent =
-            `${people.length} Anggota`;
-
-    }
-
-}
-
-/* ==========================================================
-   GENERATION
-========================================================== */
-
-function renderGeneration() {
-
-    if (!generationSelect) return;
-
-    const people = Store.get("people");
-
-    const generations = [...new Set(
-
-        people.map(person => person.generation)
-
-    )]
-
-    .sort((a, b) => Number(a) - Number(b));
-
-    generationSelect.innerHTML = "";
-
-    generationSelect.appendChild(
-
-        new Option(
-            "Semua Generasi",
-            ""
-        )
-
-    );
-
-    generations.forEach(g => {
-
-        generationSelect.appendChild(
-
-            new Option(
-
-                "Generasi " + g,
-
-                g
-
-            )
-
-        );
-
-    });
-
-}
-
-/* ==========================================================
-   MEMBER LIST
-========================================================== */
-
-function renderMemberList() {
-
-    if (!memberList) return;
-
-    memberList.innerHTML = "";
-
-    const people = getFilteredPeople()
-
-        .sort((a, b) =>
-
-            a.fullName.localeCompare(
-
-                b.fullName,
-
-                "id"
-
-            )
-
-        );
-
-    people.forEach(person => {
-
-        const item = createItem(person);
-
-        memberList.appendChild(item);
-
-    });
-
-}
-
-/* ==========================================================
-   MEMBER ITEM
-========================================================== */
-
-function createItem(person) {
-
-    const button = document.createElement("button");
-
-    button.className = "sidebar-person";
-
-    if (
-
-        Store.get("selectedPerson")?.id === person.id
-
-    ) {
-
-        button.classList.add("active");
-
-    }
-
-    button.innerHTML = `
-
-        <div class="sidebar-avatar">
-
-            ${initials(person.fullName)}
-
-        </div>
-
-        <div class="sidebar-info">
-
-            <strong>${escape(person.fullName)}</strong>
-
-            <small>
-
-                Generasi ${person.generation}
-
-            </small>
-
-        </div>
-
-    `;
-
-    button.onclick = () => {
-
-        selectPerson(person.id);
-
-    };
-
-    return button;
+    renderSidebar();
 
 }
 
@@ -207,31 +42,15 @@ function createItem(person) {
 
 function bindEvents() {
 
-    searchInput?.addEventListener(
-
-        "input",
-
-        e => {
-
-            setSearch(
-
-                e.target.value
-
-            );
-
-        }
-
-    );
-
-    generationSelect?.addEventListener(
+    generationFilter?.addEventListener(
 
         "change",
 
-        e => {
+        () => {
 
-            setGenerationFilter(
+            Store.setGenerationFilter(
 
-                e.target.value
+                generationFilter.value
 
             );
 
@@ -242,31 +61,178 @@ function bindEvents() {
 }
 
 /* ==========================================================
-   HELPERS
+   RENDER
 ========================================================== */
 
-function initials(name = "") {
+export function renderSidebar() {
 
-    return name
+    if (!memberList)
+        return;
 
-        .split(" ")
+    const people =
+        getFilteredPeople();
 
-        .slice(0,2)
+    memberList.innerHTML = "";
 
-        .map(word => word[0])
+    memberCount.textContent =
+        `${people.length} Anggota`;
 
-        .join("")
+    people.forEach(person => {
 
-        .toUpperCase();
+        memberList.appendChild(
+
+            createItem(person)
+
+        );
+
+    });
 
 }
 
-function escape(text = "") {
+/* ==========================================================
+   ITEM
+========================================================== */
 
-    const div = document.createElement("div");
+function createItem(person) {
 
-    div.textContent = text;
+    const item =
+        document.createElement("div");
 
-    return div.innerHTML;
+    item.className =
+        "member-item";
+
+    item.dataset.id =
+        person.id;
+
+    item.innerHTML = `
+
+        <div class="member-avatar">
+
+            ${
+                person.photo
+
+                ?
+
+                `<img
+                    src="${person.photo}"
+                    alt="${person.name}">`
+
+                :
+
+                "👤"
+
+            }
+
+        </div>
+
+        <div class="member-info">
+
+            <strong>
+
+                ${person.name}
+
+            </strong>
+
+            <small>
+
+                Generasi
+                ${person.generation ?? "-"}
+
+            </small>
+
+        </div>
+
+    `;
+
+    item.addEventListener(
+
+        "click",
+
+        () => {
+
+            document.dispatchEvent(
+
+                new CustomEvent(
+
+                    "member:selected",
+
+                    {
+
+                        detail: person
+
+                    }
+
+                )
+
+            );
+
+        }
+
+    );
+
+    return item;
 
 }
+
+/* ==========================================================
+   GENERATION
+========================================================== */
+
+function populateGenerationFilter() {
+
+    if (!generationFilter)
+        return;
+
+    const generations = [
+
+        ...new Set(
+
+            Store.people.map(
+
+                person => person.generation
+
+            )
+
+        )
+
+    ]
+
+    .filter(Boolean)
+
+    .sort((a, b) => a - b);
+
+    generationFilter.innerHTML =
+
+        `<option value="">
+            Semua Generasi
+        </option>`;
+
+    generations.forEach(gen => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = gen;
+
+        option.textContent =
+            `Generasi ${gen}`;
+
+        generationFilter.appendChild(
+
+            option
+
+        );
+
+    });
+
+}
+
+/* ==========================================================
+   STORE
+========================================================== */
+
+Store.subscribe(() => {
+
+    renderSidebar();
+
+});
