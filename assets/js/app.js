@@ -2,57 +2,33 @@
  * ==========================================================
  * Family Tree v2
  * app.js
- * Application Bootstrap
  * ==========================================================
  */
 
 import { CONFIG } from "./config.js";
 
-import {
-    initializeStore,
-    setPeople
-} from "./store.js";
+import { setPeople } from "./store.js";
+
+import { loadPeople } from "./api.js";
+
+import { initializeRouter } from "./router.js";
+
+import { initializeHeader } from "./components/header.js";
+
+import { initializeToolbar } from "./components/toolbar.js";
+
+import { initializeSidebar } from "./components/sidebar.js";
+
+import { initializeSearchBox } from "./components/searchBox.js";
+
+import { initializeDetailPanel } from "./components/detailPanel.js";
 
 import {
-    loadPeople
-} from "./api.js";
 
-import {
-    initializeRouter
-} from "./router.js";
-
-import {
-    initializeHeader
-} from "./components/header.js";
-
-import {
-    initializeSearchBox
-} from "./components/searchBox.js";
-
-import {
-    initializeToolbar
-} from "./components/toolbar.js";
-
-import {
-    initializeSidebar
-} from "./components/sidebar.js";
-
-import {
-    initializeDetailPanel
-} from "./components/detailPanel.js";
-
-import {
-    initializeTreeCanvas,
+    initializeTree,
     renderTree
+
 } from "./components/treeCanvas.js";
-
-import {
-    Toast
-} from "./components/toast.js";
-
-import {
-    Dialog
-} from "./components/dialog.js";
 
 /* ==========================================================
    START
@@ -84,15 +60,9 @@ async function startApplication() {
 
         );
 
-        /* ---------------------------
-           STORE
-        --------------------------- */
-
-        initializeStore();
-
-        /* ---------------------------
+        /* -------------------------
            UI
-        --------------------------- */
+        -------------------------- */
 
         initializeHeader();
 
@@ -106,11 +76,11 @@ async function startApplication() {
 
         initializeDetailPanel();
 
-        initializeTreeCanvas();
+        initializeTree();
 
-        /* ---------------------------
+        /* -------------------------
            DATA
-        --------------------------- */
+        -------------------------- */
 
         const people = await loadPeople();
 
@@ -118,15 +88,11 @@ async function startApplication() {
 
         renderTree();
 
-        /* ---------------------------
-           EVENTS
-        --------------------------- */
-
         bindEvents();
 
-        Toast.success(
+        console.log(
 
-            "Data keluarga berhasil dimuat."
+            "Family Tree berhasil dimuat."
 
         );
 
@@ -134,11 +100,11 @@ async function startApplication() {
 
     catch (error) {
 
-        console.error(error);
+        console.error(
 
-        Toast.error(
+            "Application Error",
 
-            "Aplikasi gagal dijalankan."
+            error
 
         );
 
@@ -166,77 +132,9 @@ function bindEvents() {
 
             renderTree();
 
-        }, 250)
+        })
 
     );
-
-    document.addEventListener(
-
-        CONFIG.EVENTS.TREE_REFRESH,
-
-        () => {
-
-            renderTree();
-
-        }
-
-    );
-
-    document.addEventListener(
-
-        CONFIG.EVENTS.DATA_UPDATED,
-
-        async () => {
-
-            await reloadData();
-
-        }
-
-    );
-
-}
-
-/* ==========================================================
-   RELOAD
-========================================================== */
-
-export async function reloadData() {
-
-    try {
-
-        showLoading(true);
-
-        const people = await loadPeople();
-
-        setPeople(people);
-
-        renderTree();
-
-        Toast.success(
-
-            "Data berhasil diperbarui."
-
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        Toast.error(
-
-            "Tidak dapat memuat data."
-
-        );
-
-    }
-
-    finally {
-
-        showLoading(false);
-
-    }
 
 }
 
@@ -250,7 +148,8 @@ function showLoading(show = true) {
 
         document.querySelector("#loading");
 
-    if (!loading) return;
+    if (!loading)
+        return;
 
     loading.classList.toggle(
 
@@ -263,7 +162,7 @@ function showLoading(show = true) {
 }
 
 /* ==========================================================
-   UTIL
+   DEBOUNCE
 ========================================================== */
 
 function debounce(callback, delay = 250) {
@@ -285,18 +184,22 @@ function debounce(callback, delay = 250) {
 }
 
 /* ==========================================================
-   GLOBAL DEBUG
+   GLOBAL
 ========================================================== */
 
 window.App = {
 
-    reload: reloadData,
+    renderTree,
 
-    render: renderTree,
+    reload: async () => {
 
-    toast: Toast,
+        const people = await loadPeople();
 
-    dialog: Dialog,
+        setPeople(people);
+
+        renderTree();
+
+    },
 
     config: CONFIG
 
