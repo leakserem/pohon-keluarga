@@ -28,16 +28,14 @@ export const CONFIG = Object.freeze({
 
     API: {
 
-        URL: "https://script.google.com/macros/s/AKfycbzre0WpZWeTx-5j_QEjJQRpzk307906mM32JtYTF8p6CYTLeh3cX5_yOHXM1CTBmAE_/exec",
+    BASE_URL:
+        "https://script.google.com/macros/s/AKfycbznthSzb5gqHaRNsNzjH9qpRpEIfM-5f5Yv87smFO4AN9vkJ6F_KRl6amyfQjLLmjtQ/exec",
 
-        TIMEOUT: 15000,
+    TIMEOUT: 10000,
 
-        RETRY: 2,
+    RETRY: 2
 
-        CACHE: true
-
-    },
-
+},
     /* ======================================================
        TREE
     ====================================================== */
