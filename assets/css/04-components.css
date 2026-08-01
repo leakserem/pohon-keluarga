@@ -135,7 +135,107 @@ textarea{
     margin-bottom:1rem;
 
 }
+/* ==========================================================
+   DETAIL PANEL
+========================================================== */
 
+.detail-empty{
+
+    padding:24px;
+
+    text-align:center;
+
+    color:#666;
+
+}
+
+.detail-card{
+
+    padding:20px;
+
+}
+
+.detail-photo{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-bottom:18px;
+
+}
+
+.detail-photo img{
+
+    width:120px;
+
+    height:120px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+.detail-avatar{
+
+    width:120px;
+
+    height:120px;
+
+    border-radius:50%;
+
+    background:#ddd;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:56px;
+
+}
+
+.detail-card h2{
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+}
+
+.detail-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.detail-table th{
+
+    width:35%;
+
+    text-align:left;
+
+    padding:10px;
+
+    background:#f5f5f5;
+
+}
+
+.detail-table td{
+
+    padding:10px;
+
+}
+
+.detail-table tr{
+
+    border-bottom:1px solid #ddd;
+
+}
 /* ==========================================================
    CARD
    ========================================================== */
