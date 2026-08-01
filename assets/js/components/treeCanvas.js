@@ -35,6 +35,9 @@ let dragStartY = 0;
 
 export function initializeTree() {
 
+    if (!canvas || !svg || !nodesLayer)
+        return;
+
     bindCanvasEvents();
 
     renderTree();
@@ -43,7 +46,8 @@ export function initializeTree() {
 
 export function renderTree() {
 
-    if (!canvas) return;
+    if (!canvas)
+        return;
 
     clearCanvas();
 
@@ -65,9 +69,11 @@ export function renderTree() {
 
 function clearCanvas() {
 
-    svg.innerHTML = "";
+    if (svg)
+        svg.innerHTML = "";
 
-    nodesLayer.innerHTML = "";
+    if (nodesLayer)
+        nodesLayer.innerHTML = "";
 
 }
 
@@ -133,14 +139,15 @@ function drawNodes(layout) {
 }
 
 /* ==========================================================
-   CONNECTIONS
+   DRAW CONNECTIONS
 ========================================================== */
 
 function drawConnections(layout) {
 
     layout.forEach(child => {
 
-        if (!child.parentIds) return;
+        if (!child.parentIds)
+            return;
 
         child.parentIds
             .split(",")
@@ -148,10 +155,13 @@ function drawConnections(layout) {
             .forEach(parentId => {
 
                 const parent = layout.find(
+
                     person => person.id === parentId
+
                 );
 
-                if (!parent) return;
+                if (!parent)
+                    return;
 
                 createCurve(
 
@@ -177,33 +187,37 @@ function drawConnections(layout) {
 
 function createCurve(x1, y1, x2, y2) {
 
-    const curve = document.createElementNS(
+    if (!svg)
+        return;
+
+    const path = document.createElementNS(
+
         SVG_NS,
+
         "path"
+
     );
 
     const middle = (y1 + y2) / 2;
 
-    curve.setAttribute(
+    path.setAttribute(
+
         "d",
-        `
-M ${x1} ${y1}
-C
-${x1} ${middle}
-${x2} ${middle}
-${x2} ${y2}
-`
+
+        `M ${x1} ${y1}
+         C ${x1} ${middle}
+           ${x2} ${middle}
+           ${x2} ${y2}`
+
     );
 
-    curve.setAttribute("fill", "none");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#8ca69c");
+    path.setAttribute("stroke-width", "2");
 
-    curve.setAttribute("stroke", "#9db4a3");
+    path.classList.add("tree-line");
 
-    curve.setAttribute("stroke-width", "2");
-
-    curve.classList.add("tree-line");
-
-    svg.appendChild(curve);
+    svg.appendChild(path);
 
 }
 
@@ -213,12 +227,15 @@ ${x2} ${y2}
 
 function updateTransform() {
 
-    const value =
+    const transform =
+
         `translate(${panX}px,${panY}px) scale(${zoom})`;
 
-    nodesLayer.style.transform = value;
+    if (svg)
+        svg.style.transform = transform;
 
-    svg.style.transform = value;
+    if (nodesLayer)
+        nodesLayer.style.transform = transform;
 
 }
 
@@ -228,10 +245,7 @@ function updateTransform() {
 
 export function zoomIn() {
 
-    zoom += 0.1;
-
-    if (zoom > 2.5)
-        zoom = 2.5;
+    zoom = Math.min(2.5, zoom + 0.1);
 
     updateTransform();
 
@@ -239,10 +253,7 @@ export function zoomIn() {
 
 export function zoomOut() {
 
-    zoom -= 0.1;
-
-    if (zoom < 0.3)
-        zoom = 0.3;
+    zoom = Math.max(0.3, zoom - 0.1);
 
     updateTransform();
 
@@ -261,18 +272,48 @@ export function resetZoom() {
 }
 
 /* ==========================================================
+   CENTER
+========================================================== */
+
+export function centerTree() {
+
+    panX = 40;
+
+    panY = 40;
+
+    updateTransform();
+
+}
+
+/* ==========================================================
+   FIT
+========================================================== */
+
+export function fitTree() {
+
+    zoom = 1;
+
+    panX = 40;
+
+    panY = 40;
+
+    updateTransform();
+
+}
+
+/* ==========================================================
    PAN
 ========================================================== */
 
 function bindCanvasEvents() {
 
-    canvas.addEventListener("mousedown", e => {
+    canvas.addEventListener("mousedown", event => {
 
         dragging = true;
 
-        dragStartX = e.clientX - panX;
+        dragStartX = event.clientX - panX;
 
-        dragStartY = e.clientY - panY;
+        dragStartY = event.clientY - panY;
 
         canvas.style.cursor = "grabbing";
 
@@ -286,28 +327,40 @@ function bindCanvasEvents() {
 
     });
 
-    window.addEventListener("mousemove", e => {
+    window.addEventListener("mousemove", event => {
 
-        if (!dragging) return;
+        if (!dragging)
+            return;
 
-        panX = e.clientX - dragStartX;
+        panX = event.clientX - dragStartX;
 
-        panY = e.clientY - dragStartY;
+        panY = event.clientY - dragStartY;
 
         updateTransform();
 
     });
 
-    canvas.addEventListener("wheel", e => {
+    canvas.addEventListener(
 
-        e.preventDefault();
+        "wheel",
 
-        if (e.deltaY < 0)
-            zoomIn();
-        else
-            zoomOut();
+        event => {
 
-    }, { passive: false });
+            event.preventDefault();
+
+            if (event.deltaY < 0)
+
+                zoomIn();
+
+            else
+
+                zoomOut();
+
+        },
+
+        { passive: false }
+
+    );
 
 }
 
