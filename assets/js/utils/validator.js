@@ -2,248 +2,110 @@
  * ==========================================================
  * Family Tree v2
  * validator.js
- * Validation Utilities
+ * Data Validator
  * ==========================================================
  */
 
 /* ==========================================================
-   EMPTY
+   ID
 ========================================================== */
 
-/**
- * Cek nilai kosong
- */
-export function required(value) {
+export function isValidId(value) {
 
-    if (value === null || value === undefined) {
+    return typeof value === "string" &&
 
-        return false;
-
-    }
-
-    return String(value).trim().length > 0;
+        value.trim().length > 0;
 
 }
 
 /* ==========================================================
-   STRING
+   NAME
 ========================================================== */
 
-/**
- * Panjang minimum
- */
-export function minLength(value = "", length = 1) {
+export function isValidName(value) {
 
-    return String(value).trim().length >= length;
+    return typeof value === "string" &&
 
-}
-
-/**
- * Panjang maksimum
- */
-export function maxLength(value = "", length = 255) {
-
-    return String(value).trim().length <= length;
+        value.trim().length > 0;
 
 }
 
 /* ==========================================================
-   NUMBER
+   GENERATION
 ========================================================== */
 
-/**
- * Apakah angka
- */
-export function isNumber(value) {
-
-    return !Number.isNaN(Number(value));
-
-}
-
-/**
- * Rentang angka
- */
-export function between(value, min, max) {
+export function isValidGeneration(value) {
 
     const number = Number(value);
 
-    return number >= min && number <= max;
+    return Number.isInteger(number) &&
+
+        number >= 1;
 
 }
 
 /* ==========================================================
-   DATE
+   PHOTO
 ========================================================== */
 
-/**
- * Validasi tanggal
- */
-export function isDate(value) {
+export function isValidPhoto(value) {
 
-    return !Number.isNaN(Date.parse(value));
+    if (
 
-}
+        value === "" ||
 
-/* ==========================================================
-   EMAIL
-========================================================== */
+        value === null ||
 
-/**
- * Validasi email
- */
-export function isEmail(value = "") {
+        value === undefined
 
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-}
-
-/* ==========================================================
-   PHONE
-========================================================== */
-
-/**
- * Validasi nomor telepon sederhana
- */
-export function isPhone(value = "") {
-
-    return /^[0-9+\-\s()]{6,20}$/.test(value);
-
-}
-
-/* ==========================================================
-   URL
-========================================================== */
-
-/**
- * Validasi URL
- */
-export function isURL(value = "") {
-
-    try {
-
-        new URL(value);
+    ) {
 
         return true;
 
     }
 
-    catch {
-
-        return false;
-
-    }
+    return typeof value === "string";
 
 }
 
 /* ==========================================================
-   PERSON
+   MEMBER
 ========================================================== */
 
-/**
- * Validasi nama anggota
- */
-export function validName(name) {
+export function validateMember(member) {
 
-    return required(name) &&
-           minLength(name, 2) &&
-           maxLength(name, 100);
+    const errors = [];
 
-}
+    if (!isValidId(member.id)) {
 
-/**
- * Validasi jenis kelamin
- */
-export function validGender(gender) {
-
-    return [
-
-        "male",
-
-        "female"
-
-    ].includes(String(gender).toLowerCase());
-
-}
-
-/**
- * Validasi generasi
- */
-export function validGeneration(value) {
-
-    return isNumber(value) &&
-           between(value, 1, 99);
-
-}
-
-/**
- * Validasi ID anggota
- */
-export function validId(id) {
-
-    return required(id);
-
-}
-
-/* ==========================================================
-   OBJECT
-========================================================== */
-
-/**
- * Validasi object anggota keluarga
- */
-export function validatePerson(person = {}) {
-
-    const errors = {};
-
-    if (!validId(person.id)) {
-
-        errors.id = "ID tidak valid";
+        errors.push("ID tidak valid");
 
     }
 
-    if (!validName(person.name)) {
+    if (!isValidName(member.fullName)) {
 
-        errors.name = "Nama wajib diisi";
-
-    }
-
-    if (!validGender(person.gender)) {
-
-        errors.gender = "Jenis kelamin tidak valid";
+        errors.push("Nama lengkap wajib diisi");
 
     }
 
-    if (
+    if (!isValidGeneration(member.generation)) {
 
-        person.generation !== undefined &&
+        errors.push("Generasi tidak valid");
 
-        !validGeneration(person.generation)
+    }
 
-    ) {
+    if (!isValidPhoto(member.photo)) {
 
-        errors.generation = "Generasi tidak valid";
+        errors.push("Foto tidak valid");
 
     }
 
     return {
 
-        valid: Object.keys(errors).length === 0,
+        valid: errors.length === 0,
 
         errors
 
     };
-
-}
-
-/* ==========================================================
-   ARRAY
-========================================================== */
-
-/**
- * Validasi array anggota
- */
-export function validatePeople(list = []) {
-
-    return list.map(person => validatePerson(person));
 
 }
