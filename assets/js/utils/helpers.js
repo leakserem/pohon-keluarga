@@ -2,7 +2,7 @@
  * ==========================================================
  * Family Tree v2
  * helpers.js
- * General Helper Functions
+ * Global Helper Functions
  * ==========================================================
  */
 
@@ -10,9 +10,19 @@
    TYPE
 ========================================================== */
 
-/**
- * Cek object
- */
+export function isString(value) {
+
+    return typeof value === "string";
+
+}
+
+export function isNumber(value) {
+
+    return typeof value === "number" &&
+        !Number.isNaN(value);
+
+}
+
 export function isObject(value) {
 
     return value !== null &&
@@ -21,85 +31,123 @@ export function isObject(value) {
 
 }
 
-/**
- * Cek array
- */
 export function isArray(value) {
 
     return Array.isArray(value);
 
 }
 
-/**
- * Cek string
- */
-export function isString(value) {
+export function isEmpty(value) {
 
-    return typeof value === "string";
-
-}
-
-/**
- * Cek number
- */
-export function isNumber(value) {
-
-    return typeof value === "number" &&
-        !Number.isNaN(value);
-
-}
-
-/**
- * Cek function
- */
-export function isFunction(value) {
-
-    return typeof value === "function";
+    return value === undefined ||
+        value === null ||
+        value === "";
 
 }
 
 /* ==========================================================
-   ID
+   NUMBER
 ========================================================== */
 
-/**
- * Membuat ID unik
- */
-export function uuid(prefix = "") {
+export function clamp(value, min, max) {
 
-    const id =
+    return Math.min(
 
-        Date.now().toString(36) +
+        Math.max(value, min),
 
-        Math.random().toString(36).substring(2, 8);
+        max
 
-    return prefix + id;
+    );
+
+}
+
+export function toNumber(value, fallback = 0) {
+
+    const number = Number(value);
+
+    return Number.isNaN(number)
+
+        ? fallback
+
+        : number;
 
 }
 
 /* ==========================================================
-   CLONE
+   STRING
 ========================================================== */
 
-/**
- * Deep Clone Object
- */
+export function trim(value) {
+
+    return String(value ?? "").trim();
+
+}
+
+export function capitalize(text) {
+
+    text = trim(text);
+
+    if (!text) return "";
+
+    return text.charAt(0).toUpperCase() +
+
+        text.slice(1);
+
+}
+
+export function upper(text) {
+
+    return trim(text).toUpperCase();
+
+}
+
+export function lower(text) {
+
+    return trim(text).toLowerCase();
+
+}
+
+/* ==========================================================
+   ARRAY
+========================================================== */
+
+export function unique(array = []) {
+
+    return [...new Set(array)];
+
+}
+
+export function sortBy(array, field) {
+
+    return [...array].sort(
+
+        (a, b) => {
+
+            const left = a[field] ?? "";
+
+            const right = b[field] ?? "";
+
+            return String(left)
+
+                .localeCompare(String(right));
+
+        }
+
+    );
+
+}
+
+/* ==========================================================
+   OBJECT
+========================================================== */
+
 export function clone(value) {
 
-    return structuredClone
-        ? structuredClone(value)
-        : JSON.parse(JSON.stringify(value));
+    return structuredClone(value);
 
 }
 
-/* ==========================================================
-   MERGE
-========================================================== */
-
-/**
- * Merge object sederhana
- */
-export function merge(target = {}, source = {}) {
+export function merge(target, source) {
 
     return {
 
@@ -112,91 +160,24 @@ export function merge(target = {}, source = {}) {
 }
 
 /* ==========================================================
-   ARRAY
+   ID
 ========================================================== */
 
-/**
- * Hapus duplikat array
- */
-export function unique(array = []) {
+export function uuid() {
 
-    return [...new Set(array)];
+    if (crypto.randomUUID) {
 
-}
-
-/**
- * Kelompokkan array
- */
-export function groupBy(array, key) {
-
-    return array.reduce((result, item) => {
-
-        const value = item[key];
-
-        if (!result[value]) {
-
-            result[value] = [];
-
-        }
-
-        result[value].push(item);
-
-        return result;
-
-    }, {});
-
-}
-
-/**
- * Urutkan berdasarkan field
- */
-export function sortBy(array, field) {
-
-    return [...array].sort((a, b) => {
-
-        if (a[field] < b[field]) return -1;
-
-        if (a[field] > b[field]) return 1;
-
-        return 0;
-
-    });
-
-}
-
-/* ==========================================================
-   STRING
-========================================================== */
-
-/**
- * Potong string
- */
-export function truncate(text = "", length = 50) {
-
-    if (text.length <= length) {
-
-        return text;
+        return crypto.randomUUID();
 
     }
 
-    return text.substring(0, length) + "...";
+    return Date.now().toString(36) +
 
-}
+        Math.random()
 
-/**
- * Slug
- */
-export function slug(text = "") {
+            .toString(36)
 
-    return text
-
-        .toLowerCase()
-
-        .trim()
-
-        .replace(/\s+/g, "-")
-
-        .replace(/[^\w-]/g, "");
+            .substring(2);
 
 }
 
@@ -204,93 +185,12 @@ export function slug(text = "") {
    TIME
 ========================================================== */
 
-/**
- * Delay
- */
-export function sleep(ms = 500) {
+export function sleep(ms = 0) {
 
     return new Promise(resolve => {
 
         setTimeout(resolve, ms);
 
     });
-
-}
-
-/**
- * Debounce
- */
-export function debounce(callback, delay = 300) {
-
-    let timer;
-
-    return (...args) => {
-
-        clearTimeout(timer);
-
-        timer = setTimeout(() => {
-
-            callback(...args);
-
-        }, delay);
-
-    };
-
-}
-
-/**
- * Throttle
- */
-export function throttle(callback, limit = 100) {
-
-    let waiting = false;
-
-    return (...args) => {
-
-        if (waiting) return;
-
-        callback(...args);
-
-        waiting = true;
-
-        setTimeout(() => {
-
-            waiting = false;
-
-        }, limit);
-
-    };
-
-}
-
-/* ==========================================================
-   RANDOM
-========================================================== */
-
-/**
- * Random Integer
- */
-export function random(min = 0, max = 100) {
-
-    return Math.floor(
-
-        Math.random() * (max - min + 1)
-
-    ) + min;
-
-}
-
-/**
- * Random Element
- */
-export function sample(array = []) {
-
-    if (!array.length) {
-
-        return null;
-
-    }
-
-    return array[random(0, array.length - 1)];
 
 }
