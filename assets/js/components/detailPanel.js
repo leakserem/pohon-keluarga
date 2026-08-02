@@ -2,7 +2,6 @@
  * ==========================================================
  * Family Tree v2
  * detailPanel.js
- * Version 2.0
  * ==========================================================
  */
 
@@ -14,25 +13,13 @@ const panel = document.querySelector("#detailContent");
 
 export function initializeDetailPanel() {
 
-    bindEvents();
-
-    showEmpty();
-
-}
-
-/* ==========================================================
-   EVENTS
-========================================================== */
-
-function bindEvents() {
-
     document.addEventListener(
 
         "member:selected",
 
         event => {
 
-            renderMember(event.detail);
+            renderDetail(event.detail);
 
         }
 
@@ -41,39 +28,16 @@ function bindEvents() {
 }
 
 /* ==========================================================
-   EMPTY
+   RENDER
 ========================================================== */
 
-function showEmpty() {
+export function renderDetail(person) {
 
-    if (!panel) return;
+    if (!panel || !person) return;
 
-    panel.innerHTML = `
-
-        <div class="detail-empty">
-
-            <h3>Belum Ada Anggota Dipilih</h3>
-
-            <p>
-
-                Klik salah satu anggota keluarga
-                pada pohon untuk melihat detail.
-
-            </p>
-
-        </div>
-
-    `;
-
-}
-
-/* ==========================================================
-   MEMBER
-========================================================== */
-
-function renderMember(person) {
-
-    if (!panel) return;
+    const photo = person.photo
+        ? `<img src="${person.photo}" alt="${person.fullName}">`
+        : `<div class="detail-avatar-placeholder">👤</div>`;
 
     panel.innerHTML = `
 
@@ -81,17 +45,13 @@ function renderMember(person) {
 
             <div class="detail-photo">
 
-                ${
-                    person.photo
-                        ? `<img src="${person.photo}" alt="${person.name}">`
-                        : `<div class="detail-avatar">👤</div>`
-                }
+                ${photo}
 
             </div>
 
             <h2>
 
-                ${person.name || "-"}
+                ${person.fullName || "-"}
 
             </h2>
 
@@ -107,30 +67,6 @@ function renderMember(person) {
 
                 <tr>
 
-                    <th>Jenis Kelamin</th>
-
-                    <td>${person.gender || "-"}</td>
-
-                </tr>
-
-                <tr>
-
-                    <th>Lahir</th>
-
-                    <td>${person.birth || "-"}</td>
-
-                </tr>
-
-                <tr>
-
-                    <th>Wafat</th>
-
-                    <td>${person.death || "-"}</td>
-
-                </tr>
-
-                <tr>
-
                     <th>Generasi</th>
 
                     <td>${person.generation || "-"}</td>
@@ -139,9 +75,17 @@ function renderMember(person) {
 
                 <tr>
 
-                    <th>Ayah / Ibu</th>
+                    <th>Ayah</th>
 
-                    <td>${person.parentIds || "-"}</td>
+                    <td>${person.fatherId || "-"}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Ibu</th>
+
+                    <td>${person.motherId || "-"}</td>
 
                 </tr>
 
@@ -149,23 +93,7 @@ function renderMember(person) {
 
                     <th>Pasangan</th>
 
-                    <td>${person.spouseIds || "-"}</td>
-
-                </tr>
-
-                <tr>
-
-                    <th>Alamat</th>
-
-                    <td>${person.address || "-"}</td>
-
-                </tr>
-
-                <tr>
-
-                    <th>Pekerjaan</th>
-
-                    <td>${person.job || "-"}</td>
+                    <td>${person.spouseId || "-"}</td>
 
                 </tr>
 
@@ -186,17 +114,25 @@ function renderMember(person) {
 }
 
 /* ==========================================================
-   PUBLIC API
+   CLEAR
 ========================================================== */
 
 export function clearDetailPanel() {
 
-    showEmpty();
+    if (!panel) return;
 
-}
+    panel.innerHTML = `
 
-export function showMemberDetail(person) {
+        <div class="detail-empty">
 
-    renderMember(person);
+            <p>
+
+                Pilih anggota keluarga untuk melihat detail.
+
+            </p>
+
+        </div>
+
+    `;
 
 }
