@@ -2,67 +2,67 @@
  * ==========================================================
  * Family Tree v2
  * treeNode.js
+ * Tree Node Component
  * ==========================================================
  */
 
-const PLACEHOLDER =
-    "assets/images/avatar.svg";
+import {
+
+    create,
+
+    text
+
+} from "../utils/dom.js";
+
+import {
+
+    formatDate
+
+} from "../utils/date.js";
+
+import * as Format
+
+    from "../utils/formatter.js";
+
+import {
+
+    getPhoto
+
+} from "../utils/image.js";
+
+import {
+
+    emit
+
+} from "../utils/dom.js";
 
 /* ==========================================================
-   CREATE NODE
+   PUBLIC
 ========================================================== */
 
 export function createTreeNode(person) {
 
-    const node = document.createElement("article");
+    const node = create(
 
-    node.className = "tree-node";
+        "article",
+
+        "tree-node"
+
+    );
 
     node.dataset.id = person.id;
 
-    node.style.left = `${person.x}px`;
+    node.style.left = person.x + "px";
 
-    node.style.top = `${person.y}px`;
+    node.style.top = person.y + "px";
 
-    const photo = person.photo
-        ? person.photo
-        : PLACEHOLDER;
+    node.append(
 
-    node.innerHTML = `
+        createHeader(person),
 
-        <div class="node-photo">
+        createBody(person)
 
-            <img
-                src="${photo}"
-                alt="${person.fullName}"
-                loading="lazy"
-                onerror="this.src='${PLACEHOLDER}'">
-
-        </div>
-
-        <div class="node-content">
-
-            <h3 class="node-name">
-
-                ${person.fullName || "-"}
-
-            </h3>
-
-            <div class="node-id">
-
-                ${person.id}
-
-            </div>
-
-            <div class="node-generation">
-
-                Generasi ${person.generation || "-"}
-
-            </div>
-
-        </div>
-
-    `;
+    );
 
     node.addEventListener(
 
@@ -70,19 +70,11 @@ export function createTreeNode(person) {
 
         () => {
 
-            document.dispatchEvent(
+            emit(
 
-                new CustomEvent(
+                "member:selected",
 
-                    "member:selected",
-
-                    {
-
-                        detail: person
-
-                    }
-
-                )
+                person
 
             );
 
@@ -91,5 +83,213 @@ export function createTreeNode(person) {
     );
 
     return node;
+
+}
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+function createHeader(person) {
+
+    const header = create(
+
+        "div",
+
+        "node-header"
+
+    );
+
+    const avatar = create(
+
+        "div",
+
+        "node-avatar"
+
+    );
+
+    const image = create("img");
+
+    image.loading = "lazy";
+
+    image.decoding = "async";
+
+    image.alt =
+
+        Format.fullName(
+
+            person.fullName
+
+        );
+
+    image.src =
+
+        getPhoto(
+
+            person.photo
+
+        );
+
+    avatar.appendChild(image);
+
+    const title = create(
+
+        "div",
+
+        "node-title"
+
+    );
+
+    const h3 = create("h3");
+
+    text(
+
+        h3,
+
+        Format.fullName(
+
+            person.fullName
+
+        )
+
+    );
+
+    const generation = create("small");
+
+    text(
+
+        generation,
+
+        Format.generation(
+
+            person.generation
+
+        )
+
+    );
+
+    title.append(
+
+        h3,
+
+        generation
+
+    );
+
+    header.append(
+
+        avatar,
+
+        title
+
+    );
+
+    return header;
+
+}
+
+/* ==========================================================
+   BODY
+========================================================== */
+
+function createBody(person) {
+
+    const body = create(
+
+        "div",
+
+        "node-body"
+
+    );
+
+    body.append(
+
+        row(
+
+            "ID",
+
+            Format.id(person.id)
+
+        ),
+
+        row(
+
+            "Lahir",
+
+            formatDate(
+
+                person.birthDate
+
+            )
+
+        ),
+
+        row(
+
+            "Catatan",
+
+            Format.notes(
+
+                person.notes
+
+            )
+
+        )
+
+    );
+
+    return body;
+
+}
+
+/* ==========================================================
+   ROW
+========================================================== */
+
+function row(
+
+    label,
+
+    value
+
+) {
+
+    const container = create(
+
+        "div",
+
+        "node-row"
+
+    );
+
+    const strong = create("strong");
+
+    text(
+
+        strong,
+
+        label
+
+    );
+
+    const span = create("span");
+
+    text(
+
+        span,
+
+        value
+
+    );
+
+    container.append(
+
+        strong,
+
+        span
+
+    );
+
+    return container;
 
 }
