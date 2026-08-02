@@ -2,218 +2,199 @@
  * ==========================================================
  * Family Tree v2
  * autoLayout.js
- * FamilyEcho Layout Engine
+ * Automatic Tree Layout
  * ==========================================================
  */
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 110;
+import { buildTree } from "./treeBuilder.js";
 
-const HORIZONTAL_SPACE = 60;
-const VERTICAL_SPACE = 180;
+import {
 
-export function buildFamilyLayout(people) {
+    TREE
 
-    const map = new Map();
+} from "../utils/constants.js";
 
-    people.forEach(person => {
+/* ==========================================================
+   PUBLIC
+========================================================== */
 
-        map.set(person.id, {
+export function buildFamilyLayout() {
 
-            ...person,
+    const tree = buildTree();
 
-            x: 0,
+    let startX = TREE.ROOT_OFFSET_X;
 
-            y: 0,
+    tree.forEach(root => {
 
-            children: [],
+        layout(root, startX, TREE.ROOT_OFFSET_Y);
 
-            spouse: null
-
-        });
+        startX += root.width + TREE.HORIZONTAL_GAP;
 
     });
 
-    /* ==========================================
-       BUILD RELATIONSHIP
-    ========================================== */
-
-    map.forEach(person => {
-
-        if (
-            person.fatherId &&
-            map.has(person.fatherId)
-        ) {
-
-            map
-                .get(person.fatherId)
-                .children
-                .push(person);
-
-        }
-
-        if (
-            person.motherId &&
-            map.has(person.motherId)
-        ) {
-
-            map
-                .get(person.motherId)
-                .children
-                .push(person);
-
-        }
-
-        if (
-            person.spouseId &&
-            map.has(person.spouseId)
-        ) {
-
-            person.spouse =
-                map.get(person.spouseId);
-
-        }
-
-    });
-
-    /* ==========================================
-       ROOT
-    ========================================== */
-
-    const roots = [];
-
-    map.forEach(person => {
-
-        if (
-            !person.fatherId &&
-            !person.motherId
-        ) {
-
-            roots.push(person);
-
-        }
-
-    });
-
-    let cursorX = 0;
-
-    roots.forEach(root => {
-
-        layoutTree(
-
-            root,
-
-            0,
-
-            () => cursorX,
-
-            value => cursorX = value
-
-        );
-
-        cursorX += NODE_WIDTH * 2;
-
-    });
-
-    return [...map.values()];
+    return tree;
 
 }
 
 /* ==========================================================
-   RECURSIVE
+   LAYOUT
 ========================================================== */
 
-function layoutTree(
+function layout(node, x, y) {
 
-    person,
+    node.y = y;
 
-    level,
+    if (node.children.length === 0) {
 
-    getCursor,
+        node.width = TREE.NODE_WIDTH;
 
-    setCursor
+        node.height = TREE.NODE_HEIGHT;
 
-) {
+        node.x = x;
 
-    person.y =
+        return;
 
-        level *
+    }
 
-        (NODE_HEIGHT + VERTICAL_SPACE);
+    let childX = x;
 
-    /* ======================================
-       LEAF
-    ====================================== */
+    node.children.forEach(child => {
 
-    if (
-        person.children.length === 0
-    ) {
+        layout(
 
-        person.x = getCursor();
+            child,
 
-        setCursor(
+            childX,
 
-            person.x +
+            y +
 
-            NODE_WIDTH +
-
-            HORIZONTAL_SPACE
+            TREE.VERTICAL_GAP
 
         );
 
-    }
+        childX +=
 
-    /* ======================================
-       CHILDREN
-    ====================================== */
+            child.width +
 
-    else {
+            TREE.HORIZONTAL_GAP;
 
-        person.children.forEach(child => {
+    });
 
-            layoutTree(
+    node.width = Math.max(
 
-                child,
+        TREE.NODE_WIDTH,
 
-                level + 1,
+        childX -
 
-                getCursor,
+        x -
 
-                setCursor
+        TREE.HORIZONTAL_GAP
 
-            );
+    );
+
+    node.height =
+
+        TREE.NODE_HEIGHT +
+
+        TREE.VERTICAL_GAP;
+
+    node.x =
+
+        x +
+
+        (
+
+            node.width -
+
+            TREE.NODE_WIDTH
+
+        ) / 2;
+
+}
+
+/* ==========================================================
+   FLATTEN
+========================================================== */
+
+export function flattenLayout(tree) {
+
+    const result = [];
+
+    tree.forEach(root =>
+
+        walk(root)
+
+    );
+
+    return result;
+
+    function walk(node) {
+
+        result.push({
+
+            ...node.person,
+
+            spouse: node.spouse,
+
+            x: node.x,
+
+            y: node.y
 
         });
 
-        const first =
-            person.children[0];
-
-        const last =
-            person.children[
-                person.children.length - 1
-            ];
-
-        person.x =
-
-            (first.x + last.x) / 2;
+        node.children.forEach(walk);
 
     }
 
-    /* ======================================
-       SPOUSE
-    ====================================== */
+}
 
-    if (person.spouse) {
+/* ==========================================================
+   SIZE
+========================================================== */
 
-        person.spouse.y = person.y;
+export function getLayoutSize(tree) {
 
-        person.spouse.x =
+    let width = 0;
 
-            person.x +
+    let height = 0;
 
-            NODE_WIDTH +
+    tree.forEach(root => {
 
-            30;
+        walk(root);
+
+    });
+
+    return {
+
+        width,
+
+        height
+
+    };
+
+    function walk(node) {
+
+        width = Math.max(
+
+            width,
+
+            node.x +
+
+            TREE.NODE_WIDTH
+
+        );
+
+        height = Math.max(
+
+            height,
+
+            node.y +
+
+            TREE.NODE_HEIGHT
+
+        );
+
+        node.children.forEach(walk);
 
     }
 
