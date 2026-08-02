@@ -5,22 +5,30 @@
  * ==========================================================
  */
 
+import {
+    addMember
+} from "../api.js";
+
+import {
+    Toast
+} from "./toast.js";
+
 const dialog = document.querySelector("#memberDialog");
 const title = document.querySelector("#dialogTitle");
 const body = document.querySelector("#dialogBody");
 const footer = document.querySelector("#dialogFooter");
 
 /* ==========================================================
-   DIALOG
+   PUBLIC
 ========================================================== */
 
 export const Dialog = {
 
+    initialize,
+
     openAddMember,
 
-    close,
-
-    initialize
+    close
 
 };
 
@@ -74,10 +82,12 @@ export function openAddMember() {
 
     `;
 
-    footer.querySelector("#btnCancelMember")
+    document
+        .querySelector("#btnCancelMember")
         .addEventListener("click", close);
 
-    footer.querySelector("#btnSaveMember")
+    document
+        .querySelector("#btnSaveMember")
         .addEventListener("click", saveMember);
 
     dialog.showModal();
@@ -98,59 +108,77 @@ export function close() {
    SAVE
 ========================================================== */
 
-function saveMember() {
+async function saveMember() {
 
     const data = {
 
-        id: crypto.randomUUID(),
+        id:
+            document.querySelector("#memberId").value.trim(),
 
         fullName:
-
-            document.querySelector("#memberName").value,
-
-        gender:
-
-            document.querySelector("#memberGender").value,
-
-        birthDate:
-
-            document.querySelector("#memberBirth").value,
+            document.querySelector("#memberName").value.trim(),
 
         generation:
-
             Number(
-
                 document.querySelector("#memberGeneration").value
-
-            ),
+            ) || 1,
 
         fatherId:
-
-            document.querySelector("#memberFather").value,
+            document.querySelector("#memberFather").value.trim(),
 
         motherId:
-
-            document.querySelector("#memberMother").value,
+            document.querySelector("#memberMother").value.trim(),
 
         spouseId:
-
-            document.querySelector("#memberSpouse").value,
+            document.querySelector("#memberSpouse").value.trim(),
 
         photo:
+            document.querySelector("#memberPhoto").value.trim(),
 
-            document.querySelector("#memberPhoto").value
+        notes:
+            document.querySelector("#memberNotes").value.trim()
 
     };
 
-    console.log(
+    if (!data.id) {
 
-        "New Member",
+        Toast.error("ID wajib diisi.");
 
-        data
+        return;
 
-    );
+    }
 
-    close();
+    if (!data.fullName) {
+
+        Toast.error("Nama wajib diisi.");
+
+        return;
+
+    }
+
+    try {
+
+        await addMember(data);
+
+        Toast.success("Anggota berhasil ditambahkan.");
+
+        close();
+
+        document.dispatchEvent(
+
+            new CustomEvent("data:updated")
+
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        Toast.error("Gagal menyimpan data.");
+
+    }
 
 }
 
@@ -166,43 +194,22 @@ function createMemberForm() {
 
 <label>
 
+ID
+
+<input
+id="memberId"
+type="text"
+placeholder="K-0001">
+
+</label>
+
+<label>
+
 Nama Lengkap
 
 <input
 id="memberName"
 type="text">
-
-</label>
-
-<label>
-
-Jenis Kelamin
-
-<select id="memberGender">
-
-<option value="male">
-
-Laki-laki
-
-</option>
-
-<option value="female">
-
-Perempuan
-
-</option>
-
-</select>
-
-</label>
-
-<label>
-
-Tanggal Lahir
-
-<input
-id="memberBirth"
-type="date">
 
 </label>
 
@@ -220,7 +227,7 @@ value="1">
 
 <label>
 
-Ayah
+ID Ayah
 
 <input
 id="memberFather"
@@ -230,7 +237,7 @@ type="text">
 
 <label>
 
-Ibu
+ID Ibu
 
 <input
 id="memberMother"
@@ -240,7 +247,7 @@ type="text">
 
 <label>
 
-Pasangan
+ID Pasangan
 
 <input
 id="memberSpouse"
@@ -255,7 +262,17 @@ Foto
 <input
 id="memberPhoto"
 type="text"
-placeholder="uploads/photos/...">
+placeholder="uploads/photos/K-0001.jpg">
+
+</label>
+
+<label>
+
+Catatan
+
+<textarea
+id="memberNotes"
+rows="4"></textarea>
 
 </label>
 
