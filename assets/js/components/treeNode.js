@@ -5,6 +5,13 @@
  * ==========================================================
  */
 
+const PLACEHOLDER =
+    "assets/images/avatar.svg";
+
+/* ==========================================================
+   CREATE NODE
+========================================================== */
+
 export function createTreeNode(person) {
 
     const node = document.createElement("article");
@@ -13,49 +20,43 @@ export function createTreeNode(person) {
 
     node.dataset.id = person.id;
 
-    node.style.left = person.x + "px";
+    node.style.left = `${person.x}px`;
 
-    node.style.top = person.y + "px";
+    node.style.top = `${person.y}px`;
 
     const photo = person.photo
-        ? `<img src="${person.photo}" alt="${person.fullName}">`
-        : "👤";
+        ? person.photo
+        : PLACEHOLDER;
 
     node.innerHTML = `
 
-        <div class="node-header">
+        <div class="node-photo">
 
-            <div class="node-avatar">
-
-                ${photo}
-
-            </div>
-
-            <div class="node-title">
-
-                <h3>${person.fullName || "-"}</h3>
-
-                <small>ID : ${person.id}</small>
-
-            </div>
+            <img
+                src="${photo}"
+                alt="${person.fullName}"
+                loading="lazy"
+                onerror="this.src='${PLACEHOLDER}'">
 
         </div>
 
-        <div class="node-body">
+        <div class="node-content">
 
-            <div>
+            <h3 class="node-name">
 
-                <strong>Generasi</strong><br>
+                ${person.fullName || "-"}
 
-                ${person.generation || "-"}
+            </h3>
+
+            <div class="node-id">
+
+                ${person.id}
 
             </div>
 
-            <div>
+            <div class="node-generation">
 
-                <strong>Catatan</strong><br>
-
-                ${person.notes || "-"}
+                Generasi ${person.generation || "-"}
 
             </div>
 
@@ -63,19 +64,31 @@ export function createTreeNode(person) {
 
     `;
 
-    node.addEventListener("click", () => {
+    node.addEventListener(
 
-        document.dispatchEvent(
+        "click",
 
-            new CustomEvent("member:selected", {
+        () => {
 
-                detail: person
+            document.dispatchEvent(
 
-            })
+                new CustomEvent(
 
-        );
+                    "member:selected",
 
-    });
+                    {
+
+                        detail: person
+
+                    }
+
+                )
+
+            );
+
+        }
+
+    );
 
     return node;
 
