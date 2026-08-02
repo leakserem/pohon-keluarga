@@ -2,59 +2,77 @@
  * ==========================================================
  * Family Tree v2
  * api.js
- * API Service
  * ==========================================================
  */
 
-import { CONFIG, apiUrl } from "./config.js";
-
-const cache = new Map();
+import { CONFIG } from "./config.js";
 
 /* ==========================================================
-   FETCH WITH TIMEOUT
+   API URL
 ========================================================== */
 
-async function fetchTimeout(url, options = {}) {
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbznthSzb5gqHaRNsNzjH9qpRpEIfM-5f5Yv87smFO4AN9vkJ6F_KRl6amyfQjLLmjtQ/exec";
 
-    const controller = new AbortController();
+/* ==========================================================
+   LOAD PEOPLE
+========================================================== */
 
-    const timer = setTimeout(() => {
+export async function loadPeople() {
 
-        controller.abort();
+    return await request("get");
 
-    }, CONFIG.API.TIMEOUT);
+}
 
-    try {
+/* ==========================================================
+   ADD MEMBER
+========================================================== */
 
-        const response = await fetch(url, {
+export async function addMember(person) {
 
-            ...options,
+    return await request("add", {
 
-            signal: controller.signal
+        method: "POST",
 
-        });
+        body: person
 
-        clearTimeout(timer);
+    });
 
-        if (!response.ok) {
+}
 
-            throw new Error(
+/* ==========================================================
+   UPDATE MEMBER
+========================================================== */
 
-                `HTTP ${response.status}`
+export async function updateMember(person) {
 
-            );
+    return await request("update", {
+
+        method: "POST",
+
+        body: person
+
+    });
+
+}
+
+/* ==========================================================
+   DELETE MEMBER
+========================================================== */
+
+export async function deleteMember(id) {
+
+    return await request("delete", {
+
+        method: "POST",
+
+        body: {
+
+            id
 
         }
 
-        return response;
-
-    }
-
-    finally {
-
-        clearTimeout(timer);
-
-    }
+    );
 
 }
 
@@ -64,8 +82,6 @@ async function fetchTimeout(url, options = {}) {
 
 async function request(action, options = {}) {
 
-    const url = apiUrl(action);
-
     let retry = CONFIG.API.RETRY;
 
     while (retry >= 0) {
@@ -74,11 +90,41 @@ async function request(action, options = {}) {
 
             const response = await fetchTimeout(
 
-                url,
+                API_URL,
 
-                options
+                {
+
+                    method: options.method || "GET",
+
+                    headers: {
+
+                        "Content-Type": "application/json"
+
+                    },
+
+                    body: options.body
+                        ? JSON.stringify({
+
+                              action,
+
+                              ...options.body
+
+                          })
+                        : undefined
+
+                }
 
             );
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    `HTTP ${response.status}`
+
+                );
+
+            }
 
             return await response.json();
 
@@ -101,231 +147,43 @@ async function request(action, options = {}) {
 }
 
 /* ==========================================================
-   LOAD PEOPLE
+   FETCH TIMEOUT
 ========================================================== */
 
-export async function loadPeople() {
+async function fetchTimeout(url, options = {}) {
 
-    if (
+    const controller = new AbortController();
 
-        CONFIG.API.CACHE &&
+    const timer = setTimeout(
 
-        cache.has("people")
+        () => controller.abort(),
 
-    ) {
+        CONFIG.API.TIMEOUT
 
-        return cache.get("people");
-
-    }
+    );
 
     try {
 
-        const data = await request("people");
+        return await fetch(
 
-        if (!Array.isArray(data)) {
+            url,
 
-            throw new Error(
+            {
 
-                "Invalid API response"
+                ...options,
 
-            );
+                signal: controller.signal
 
-        }
+            }
 
-        cache.set("people", data);
-
-        return data;
+        );
 
     }
 
-    catch (error) {
+    finally {
 
-        console.warn(
-
-            "Google Apps Script tidak tersedia."
-
-        );
-
-        console.warn(
-
-            "Menggunakan demo.json"
-
-        );
-
-        const response = await fetch(
-
-            "./data/demo.json"
-
-        );
-
-        const demo = await response.json();
-
-        cache.set("people", demo);
-
-        return demo;
+        clearTimeout(timer);
 
     }
-
-}
-
-/* ==========================================================
-   ADD MEMBER
-========================================================== */
-
-export async function addMember(member) {
-
-    return request(
-
-        "add",
-
-        {
-
-            method: "POST",
-
-            headers: {
-
-                "Content-Type":
-
-                "application/json"
-
-            },
-
-            body: JSON.stringify(member)
-
-        }
-
-    );
-
-}
-
-/* ==========================================================
-   UPDATE MEMBER
-========================================================== */
-
-export async function updateMember(id, data) {
-
-    return request(
-
-        "update",
-
-        {
-
-            method: "POST",
-
-            headers: {
-
-                "Content-Type":
-
-                "application/json"
-
-            },
-
-            body: JSON.stringify({
-
-                id,
-
-                ...data
-
-            })
-
-        }
-
-    );
-
-}
-
-/* ==========================================================
-   DELETE MEMBER
-========================================================== */
-
-export async function deleteMember(id) {
-
-    return request(
-
-        "delete",
-
-        {
-
-            method: "POST",
-
-            headers: {
-
-                "Content-Type":
-
-                "application/json"
-
-            },
-
-            body: JSON.stringify({
-
-                id
-
-            })
-
-        }
-
-    );
-
-}
-
-/* ==========================================================
-   SEARCH
-========================================================== */
-
-export async function searchPeople(keyword) {
-
-    const people = await loadPeople();
-
-    keyword = String(keyword)
-
-        .trim()
-
-        .toUpperCase();
-
-    return people.filter(person => {
-
-        return (
-
-            person.fullName
-
-                .toUpperCase()
-
-                .includes(keyword)
-
-            ||
-
-            String(person.generation)
-
-                .includes(keyword)
-
-        );
-
-    });
-
-}
-
-/* ==========================================================
-   GET PERSON
-========================================================== */
-
-export async function getPerson(id) {
-
-    const people = await loadPeople();
-
-    return people.find(
-
-        person => person.id === id
-
-    );
-
-}
-
-/* ==========================================================
-   CLEAR CACHE
-========================================================== */
-
-export function clearCache() {
-
-    cache.clear();
 
 }
