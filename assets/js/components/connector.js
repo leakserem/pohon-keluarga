@@ -2,139 +2,232 @@
  * ==========================================================
  * Family Tree v2
  * connector.js
+ * SVG Relationship Connector
  * ==========================================================
  */
 
-const SVG_NS = "http://www.w3.org/2000/svg";
+import {
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 110;
+    TREE,
+    SVG
+
+} from "../utils/constants.js";
 
 /* ==========================================================
    PUBLIC
 ========================================================== */
 
-export function drawConnections(svg, people) {
+export function drawConnections(svg, tree) {
 
-    svg.innerHTML = "";
+    if (!svg)
 
-    const map = new Map();
+        return;
 
-    people.forEach(person => {
+    svg.replaceChildren();
 
-        map.set(person.id, person);
+    tree.forEach(root => {
 
-    });
-
-    const drawnSpouses = new Set();
-
-    people.forEach(person => {
-
-        /* -------------------------
-           SPOUSE
-        ------------------------- */
-
-        if (
-            person.spouseId &&
-            map.has(person.spouseId)
-        ) {
-
-            const spouse = map.get(person.spouseId);
-
-            const key =
-                [person.id, spouse.id]
-                    .sort()
-                    .join("-");
-
-            if (!drawnSpouses.has(key)) {
-
-                drawMarriageLine(
-
-                    svg,
-
-                    person,
-
-                    spouse
-
-                );
-
-                drawnSpouses.add(key);
-
-            }
-
-        }
-
-        /* -------------------------
-           FATHER
-        ------------------------- */
-
-        if (
-            person.fatherId &&
-            map.has(person.fatherId)
-        ) {
-
-            drawParentLine(
-
-                svg,
-
-                map.get(person.fatherId),
-
-                person
-
-            );
-
-        }
-
-        /* -------------------------
-           MOTHER
-        ------------------------- */
-
-        if (
-            person.motherId &&
-            map.has(person.motherId)
-        ) {
-
-            drawParentLine(
-
-                svg,
-
-                map.get(person.motherId),
-
-                person
-
-            );
-
-        }
+        walk(root, svg);
 
     });
 
 }
 
 /* ==========================================================
-   MARRIAGE
+   WALK
 ========================================================== */
 
-function drawMarriageLine(
-    svg,
-    a,
-    b
-) {
+function walk(node, svg) {
 
-    const line = createLine(
+    drawSpouse(node, svg);
 
-        a.x + NODE_WIDTH,
+    drawChildren(node, svg);
 
-        a.y + NODE_HEIGHT / 2,
+    node.children.forEach(child => {
 
-        b.x,
+        walk(child, svg);
 
-        b.y + NODE_HEIGHT / 2
+    });
+
+}
+
+/* ==========================================================
+   SPOUSE
+========================================================== */
+
+function drawSpouse(node, svg) {
+
+    if (!node.spouse)
+
+        return;
+
+    const x1 =
+
+        node.x +
+
+        TREE.NODE_WIDTH;
+
+    const y =
+
+        node.y +
+
+        TREE.NODE_HEIGHT / 2;
+
+    const x2 =
+
+        x1 +
+
+        TREE.SPOUSE_GAP;
+
+    appendLine(
+
+        svg,
+
+        x1,
+
+        y,
+
+        x2,
+
+        y
 
     );
 
-    line.classList.add(
+}
 
-        "tree-marriage"
+/* ==========================================================
+   CHILDREN
+========================================================== */
+
+function drawChildren(node, svg) {
+
+    if (!node.children.length)
+
+        return;
+
+    const parentX =
+
+        node.x +
+
+        TREE.NODE_WIDTH / 2;
+
+    const parentY =
+
+        node.y +
+
+        TREE.NODE_HEIGHT;
+
+    node.children.forEach(child => {
+
+        const childX =
+
+            child.x +
+
+            TREE.NODE_WIDTH / 2;
+
+        const childY =
+
+            child.y;
+
+        appendCurve(
+
+            svg,
+
+            parentX,
+
+            parentY,
+
+            childX,
+
+            childY
+
+        );
+
+    });
+
+}
+
+/* ==========================================================
+   LINE
+========================================================== */
+
+function appendLine(
+
+    svg,
+
+    x1,
+
+    y1,
+
+    x2,
+
+    y2
+
+) {
+
+    const line =
+
+        document.createElementNS(
+
+            SVG.NAMESPACE,
+
+            "line"
+
+        );
+
+    line.setAttribute(
+
+        "x1",
+
+        x1
+
+    );
+
+    line.setAttribute(
+
+        "y1",
+
+        y1
+
+    );
+
+    line.setAttribute(
+
+        "x2",
+
+        x2
+
+    );
+
+    line.setAttribute(
+
+        "y2",
+
+        y2
+
+    );
+
+    line.setAttribute(
+
+        "stroke",
+
+        SVG.LINE_COLOR
+
+    );
+
+    line.setAttribute(
+
+        "stroke-width",
+
+        SVG.LINE_WIDTH
+
+    );
+
+    line.setAttribute(
+
+        "fill",
+
+        "none"
 
     );
 
@@ -143,79 +236,78 @@ function drawMarriageLine(
 }
 
 /* ==========================================================
-   PARENT
+   CURVE
 ========================================================== */
 
-function drawParentLine(
+function appendCurve(
+
     svg,
-    parent,
-    child
+
+    x1,
+
+    y1,
+
+    x2,
+
+    y2
+
 ) {
 
-    const x1 =
-        parent.x + NODE_WIDTH / 2;
+    const path =
 
-    const y1 =
-        parent.y + NODE_HEIGHT;
+        document.createElementNS(
 
-    const x2 =
-        child.x + NODE_WIDTH / 2;
+            SVG.NAMESPACE,
 
-    const y2 =
-        child.y;
+            "path"
+
+        );
 
     const middle =
-        (y1 + y2) / 2;
 
-    const path =
-        document.createElementNS(
-            SVG_NS,
-            "path"
-        );
+        (y1 + y2) / 2;
 
     path.setAttribute(
 
         "d",
 
         `M ${x1} ${y1}
-         L ${x1} ${middle}
-         L ${x2} ${middle}
-         L ${x2} ${y2}`
+         C ${x1} ${middle}
+           ${x2} ${middle}
+           ${x2} ${y2}`
+
+    );
+
+    path.setAttribute(
+
+        "stroke",
+
+        SVG.LINE_COLOR
+
+    );
+
+    path.setAttribute(
+
+        "stroke-width",
+
+        SVG.LINE_WIDTH
+
+    );
+
+    path.setAttribute(
+
+        "fill",
+
+        "none"
 
     );
 
     path.classList.add(
 
-        "tree-parent"
+        "tree-line"
 
     );
 
     svg.appendChild(path);
-
-}
-
-/* ==========================================================
-   LINE
-========================================================== */
-
-function createLine(
-    x1,
-    y1,
-    x2,
-    y2
-) {
-
-    const line =
-        document.createElementNS(
-            SVG_NS,
-            "line"
-        );
-
-    line.setAttribute("x1", x1);
-    line.setAttribute("y1", y1);
-    line.setAttribute("x2", x2);
-    line.setAttribute("y2", y2);
-
-    return line;
 
 }
