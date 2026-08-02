@@ -1,32 +1,32 @@
 /**
  * ==========================================================
  * Family Tree v2
- * DOM Utilities
+ * dom.js
+ * DOM Utility
  * ==========================================================
  */
 
-/**
- * Ambil satu elemen
- */
+/* ==========================================================
+   SELECTOR
+========================================================== */
+
 export function $(selector, parent = document) {
 
     return parent.querySelector(selector);
 
 }
 
-/**
- * Ambil banyak elemen
- */
 export function $$(selector, parent = document) {
 
     return [...parent.querySelectorAll(selector)];
 
 }
 
-/**
- * Membuat elemen baru
- */
-export function create(tag, className = "", html = "") {
+/* ==========================================================
+   CREATE
+========================================================== */
+
+export function create(tag, className = "") {
 
     const element = document.createElement(tag);
 
@@ -36,224 +36,180 @@ export function create(tag, className = "", html = "") {
 
     }
 
-    if (html) {
-
-        element.innerHTML = html;
-
-    }
-
     return element;
 
 }
 
-/**
- * Menambahkan child
- */
-export function append(parent, child) {
+/* ==========================================================
+   CONTENT
+========================================================== */
 
-    if (!parent || !child) return;
-
-    parent.appendChild(child);
-
-}
-
-/**
- * Menghapus semua child
- */
-export function empty(element) {
+export function text(element, value = "") {
 
     if (!element) return;
 
-    while (element.firstChild) {
+    element.textContent = value;
 
-        element.removeChild(element.firstChild);
+}
+
+export function html(element, value = "") {
+
+    if (!element) return;
+
+    element.innerHTML = value;
+
+}
+
+/* ==========================================================
+   ATTRIBUTE
+========================================================== */
+
+export function attr(element, name, value) {
+
+    if (!element) return;
+
+    if (value === undefined) {
+
+        return element.getAttribute(name);
 
     }
-
-}
-
-/**
- * Menampilkan elemen
- */
-export function show(element) {
-
-    if (!element) return;
-
-    element.hidden = false;
-
-}
-
-/**
- * Menyembunyikan elemen
- */
-export function hide(element) {
-
-    if (!element) return;
-
-    element.hidden = true;
-
-}
-
-/**
- * Toggle hidden
- */
-export function toggle(element) {
-
-    if (!element) return;
-
-    element.hidden = !element.hidden;
-
-}
-
-/**
- * Tambah class
- */
-export function addClass(element, className) {
-
-    if (!element) return;
-
-    element.classList.add(className);
-
-}
-
-/**
- * Hapus class
- */
-export function removeClass(element, className) {
-
-    if (!element) return;
-
-    element.classList.remove(className);
-
-}
-
-/**
- * Toggle class
- */
-export function toggleClass(element, className) {
-
-    if (!element) return;
-
-    element.classList.toggle(className);
-
-}
-
-/**
- * Cek class
- */
-export function hasClass(element, className) {
-
-    if (!element) return false;
-
-    return element.classList.contains(className);
-
-}
-
-/**
- * Set text
- */
-export function setText(element, text) {
-
-    if (!element) return;
-
-    element.textContent = text;
-
-}
-
-/**
- * Set HTML
- */
-export function setHTML(element, html) {
-
-    if (!element) return;
-
-    element.innerHTML = html;
-
-}
-
-/**
- * Set attribute
- */
-export function setAttr(element, name, value) {
-
-    if (!element) return;
 
     element.setAttribute(name, value);
 
 }
 
-/**
- * Ambil attribute
- */
-export function getAttr(element, name) {
+/* ==========================================================
+   CLASS
+========================================================== */
 
-    if (!element) return null;
+export function addClass(element, className) {
 
-    return element.getAttribute(name);
+    element?.classList.add(className);
 
 }
 
-/**
- * Hapus attribute
- */
-export function removeAttr(element, name) {
+export function removeClass(element, className) {
+
+    element?.classList.remove(className);
+
+}
+
+export function toggleClass(element, className) {
+
+    element?.classList.toggle(className);
+
+}
+
+export function hasClass(element, className) {
+
+    return element?.classList.contains(className);
+
+}
+
+/* ==========================================================
+   DISPLAY
+========================================================== */
+
+export function show(element) {
+
+    element?.classList.remove("hidden");
+
+}
+
+export function hide(element) {
+
+    element?.classList.add("hidden");
+
+}
+
+/* ==========================================================
+   REMOVE
+========================================================== */
+
+export function remove(element) {
+
+    element?.remove();
+
+}
+
+export function clear(element) {
 
     if (!element) return;
 
-    element.removeAttribute(name);
+    element.replaceChildren();
 
 }
 
-/**
- * Event listener
- */
-export function on(element, event, callback) {
+/* ==========================================================
+   EVENTS
+========================================================== */
 
-    if (!element) return;
+export function on(element, event, callback, options) {
 
-    element.addEventListener(event, callback);
+    element?.addEventListener(
 
-}
+        event,
 
-/**
- * Hapus event listener
- */
-export function off(element, event, callback) {
+        callback,
 
-    if (!element) return;
+        options
 
-    element.removeEventListener(event, callback);
+    );
 
 }
 
-/**
- * Delegasi event
- */
-export function delegate(parent, selector, event, callback) {
+export function off(element, event, callback, options) {
 
-    if (!parent) return;
+    element?.removeEventListener(
 
-    parent.addEventListener(event, e => {
+        event,
 
-        const target = e.target.closest(selector);
+        callback,
 
-        if (!target) return;
+        options
 
-        callback(e, target);
-
-    });
+    );
 
 }
 
-/**
- * Escape HTML
- */
-export function escapeHTML(text = "") {
+export function once(element, event, callback) {
 
-    const div = document.createElement("div");
+    element?.addEventListener(
 
-    div.textContent = text;
+        event,
 
-    return div.innerHTML;
+        callback,
+
+        {
+
+            once: true
+
+        }
+
+    );
+
+}
+
+/* ==========================================================
+   CUSTOM EVENT
+========================================================== */
+
+export function emit(name, detail = {}) {
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+
+            name,
+
+            {
+
+                detail
+
+            }
+
+        )
+
+    );
 
 }
