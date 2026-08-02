@@ -7,6 +7,10 @@
 
 import { CONFIG } from "./config.js";
 
+/* ==========================================================
+   API
+========================================================== */
+
 const API_URL =
     "https://script.google.com/macros/s/AKfycbznthSzb5gqHaRNsNzjH9qpRpEIfM-5f5Yv87smFO4AN9vkJ6F_KRl6amyfQjLLmjtQ/exec";
 
@@ -21,7 +25,117 @@ export async function loadPeople() {
     if (!response.ok) {
 
         throw new Error(
+
             `HTTP ${response.status}`
+
+        );
+
+    }
+
+    const data = await response.json();
+
+    return data.map(person => ({
+
+        id: person.id ?? "",
+
+        fullName: person.fullName ?? "",
+
+        generation: Number(person.generation) || 1,
+
+        fatherId: person.fatherId ?? "",
+
+        motherId: person.motherId ?? "",
+
+        spouseId: person.spouseId ?? "",
+
+        photo: person.photo ?? "",
+
+        notes: person.notes ?? ""
+
+    }));
+
+}
+
+/* ==========================================================
+   ADD MEMBER
+========================================================== */
+
+export async function addMember(person) {
+
+    return await sendRequest({
+
+        action: "add",
+
+        person
+
+    });
+
+}
+
+/* ==========================================================
+   UPDATE MEMBER
+========================================================== */
+
+export async function updateMember(person) {
+
+    return await sendRequest({
+
+        action: "update",
+
+        person
+
+    });
+
+}
+
+/* ==========================================================
+   DELETE MEMBER
+========================================================== */
+
+export async function deleteMember(id) {
+
+    return await sendRequest({
+
+        action: "delete",
+
+        id
+
+    });
+
+}
+
+/* ==========================================================
+   POST
+========================================================== */
+
+async function sendRequest(body) {
+
+    const response = await fetchTimeout(
+
+        API_URL,
+
+        {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify(body)
+
+        }
+
+    );
+
+    if (!response.ok) {
+
+        throw new Error(
+
+            `HTTP ${response.status}`
+
         );
 
     }
@@ -34,15 +148,15 @@ export async function loadPeople() {
    FETCH TIMEOUT
 ========================================================== */
 
-async function fetchTimeout(url) {
+async function fetchTimeout(url, options = {}) {
 
     const controller = new AbortController();
 
-    const timer = setTimeout(
+    const timeout = setTimeout(
 
         () => controller.abort(),
 
-        CONFIG.API.TIMEOUT
+        CONFIG.API.TIMEOUT || 10000
 
     );
 
@@ -54,7 +168,7 @@ async function fetchTimeout(url) {
 
             {
 
-                method: "GET",
+                ...options,
 
                 signal: controller.signal
 
@@ -66,7 +180,7 @@ async function fetchTimeout(url) {
 
     finally {
 
-        clearTimeout(timer);
+        clearTimeout(timeout);
 
     }
 
