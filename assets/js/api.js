@@ -2,185 +2,203 @@
  * ==========================================================
  * Family Tree v2
  * api.js
+ * Google Apps Script API
  * ==========================================================
  */
 
 import { CONFIG } from "./config.js";
 
 /* ==========================================================
-   API
+   URL
 ========================================================== */
 
-const API_URL =
-    "https://script.google.com/macros/s/AKfycbznthSzb5gqHaRNsNzjH9qpRpEIfM-5f5Yv87smFO4AN9vkJ6F_KRl6amyfQjLLmjtQ/exec";
+const API_URL = CONFIG.API.URL;
 
 /* ==========================================================
-   LOAD PEOPLE
+   REQUEST
+========================================================== */
+
+async function request(action = "", options = {}) {
+
+    const url = action
+
+        ? `${API_URL}?action=${encodeURIComponent(action)}`
+
+        : API_URL;
+
+    let retry = CONFIG.API.RETRY;
+
+    while (retry >= 0) {
+
+        try {
+
+            const response = await fetch(url, {
+
+                method: options.method || "GET",
+
+                headers: {
+
+                    "Content-Type": "application/json"
+
+                },
+
+                body: options.body
+
+                    ? JSON.stringify(options.body)
+
+                    : undefined
+
+            });
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    `HTTP ${response.status}`
+
+                );
+
+            }
+
+            return await response.json();
+
+        }
+
+        catch (error) {
+
+            if (retry === 0) {
+
+                throw error;
+
+            }
+
+            retry--;
+
+        }
+
+    }
+
+}
+
+/* ==========================================================
+   LOAD
 ========================================================== */
 
 export async function loadPeople() {
 
-    const response = await fetchTimeout(API_URL);
+    const data = await request();
 
-    if (!response.ok) {
+    if (!Array.isArray(data))
 
-        throw new Error(
-
-            `HTTP ${response.status}`
-
-        );
-
-    }
-
-    const data = await response.json();
+        return [];
 
     return data.map(person => ({
 
-        id: person.id ?? "",
+        id:
 
-        fullName: person.fullName ?? "",
+            person.id ?? "",
 
-        generation: Number(person.generation) || 1,
+        fullName:
 
-        fatherId: person.fatherId ?? "",
+            person.fullName ?? "",
 
-        motherId: person.motherId ?? "",
+        generation:
 
-        spouseId: person.spouseId ?? "",
+            Number(person.generation) || 1,
 
-        photo: person.photo ?? "",
+        fatherId:
 
-        notes: person.notes ?? ""
+            person.fatherId ?? "",
+
+        motherId:
+
+            person.motherId ?? "",
+
+        spouseId:
+
+            person.spouseId ?? "",
+
+        photo:
+
+            person.photo ?? "",
+
+        notes:
+
+            person.notes ?? ""
 
     }));
 
 }
 
 /* ==========================================================
-   ADD MEMBER
+   CREATE
 ========================================================== */
 
-export async function addMember(person) {
+export async function createPerson(person) {
 
-    return await sendRequest({
+    return await request("create", {
 
-        action: "add",
+        method: "POST",
 
-        person
+        body: person
 
     });
 
 }
 
 /* ==========================================================
-   UPDATE MEMBER
+   UPDATE
 ========================================================== */
 
-export async function updateMember(person) {
+export async function updatePerson(person) {
 
-    return await sendRequest({
+    return await request("update", {
 
-        action: "update",
+        method: "POST",
 
-        person
+        body: person
 
     });
 
 }
 
 /* ==========================================================
-   DELETE MEMBER
+   DELETE
 ========================================================== */
 
-export async function deleteMember(id) {
+export async function deletePerson(id) {
 
-    return await sendRequest({
+    return await request("delete", {
 
-        action: "delete",
+        method: "POST",
 
-        id
+        body: {
 
-    });
-
-}
-
-/* ==========================================================
-   POST
-========================================================== */
-
-async function sendRequest(body) {
-
-    const response = await fetchTimeout(
-
-        API_URL,
-
-        {
-
-            method: "POST",
-
-            headers: {
-
-                "Content-Type": "application/json"
-
-            },
-
-            body: JSON.stringify(body)
+            id
 
         }
 
-    );
-
-    if (!response.ok) {
-
-        throw new Error(
-
-            `HTTP ${response.status}`
-
-        );
-
-    }
-
-    return await response.json();
+    });
 
 }
 
 /* ==========================================================
-   FETCH TIMEOUT
+   HEALTH
 ========================================================== */
 
-async function fetchTimeout(url, options = {}) {
-
-    const controller = new AbortController();
-
-    const timeout = setTimeout(
-
-        () => controller.abort(),
-
-        CONFIG.API.TIMEOUT || 10000
-
-    );
+export async function ping() {
 
     try {
 
-        return await fetch(
+        await request();
 
-            url,
-
-            {
-
-                ...options,
-
-                signal: controller.signal
-
-            }
-
-        );
+        return true;
 
     }
 
-    finally {
+    catch {
 
-        clearTimeout(timeout);
+        return false;
 
     }
 
