@@ -17,25 +17,25 @@ export function createTreeNode(person) {
 
     node.style.top = person.y + "px";
 
+    const photo = person.photo
+        ? `<img src="${person.photo}" alt="${person.fullName}">`
+        : "👤";
+
     node.innerHTML = `
 
         <div class="node-header">
 
             <div class="node-avatar">
 
-                ${
-                    person.photo
-                        ? `<img src="${person.photo}" alt="${person.name}">`
-                        : "👤"
-                }
+                ${photo}
 
             </div>
 
             <div class="node-title">
 
-                <h3>${person.name}</h3>
+                <h3>${person.fullName || "-"}</h3>
 
-                <small>${person.gender || ""}</small>
+                <small>ID : ${person.id}</small>
 
             </div>
 
@@ -45,17 +45,17 @@ export function createTreeNode(person) {
 
             <div>
 
-                <strong>Lahir</strong><br>
+                <strong>Generasi</strong><br>
 
-                ${person.birth || "-"}
+                ${person.generation || "-"}
 
             </div>
 
             <div>
 
-                <strong>Generasi</strong><br>
+                <strong>Catatan</strong><br>
 
-                ${person.generation || "-"}
+                ${person.notes || "-"}
 
             </div>
 
