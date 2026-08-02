@@ -2,16 +2,17 @@
  * ==========================================================
  * Family Tree v2
  * sidebar.js
- * Version 2.0
  * ==========================================================
  */
 
 import {
-
     Store,
     getFilteredPeople
-
 } from "../store.js";
+
+/* ==========================================================
+   ELEMENTS
+========================================================== */
 
 const memberList =
     document.querySelector("#memberList");
@@ -19,44 +20,15 @@ const memberList =
 const memberCount =
     document.querySelector("#memberCount");
 
-const generationFilter =
-    document.querySelector("#generationFilter");
-
 /* ==========================================================
    PUBLIC
 ========================================================== */
 
 export function initializeSidebar() {
 
-    bindEvents();
-
-    populateGenerationFilter();
-
     renderSidebar();
 
-}
-
-/* ==========================================================
-   EVENTS
-========================================================== */
-
-function bindEvents() {
-
-    generationFilter?.addEventListener(
-
-        "change",
-
-        () => {
-
-            Store.setGenerationFilter(
-
-                generationFilter.value
-
-            );
-
-        }
-
-    );
+    Store.subscribe(renderSidebar);
 
 }
 
@@ -66,77 +38,70 @@ function bindEvents() {
 
 export function renderSidebar() {
 
-    if (!memberList)
-        return;
+    if (!memberList) return;
 
-    const people =
-        getFilteredPeople();
+    const people = getFilteredPeople();
 
     memberList.innerHTML = "";
-
-    memberCount.textContent =
-        `${people.length} Anggota`;
 
     people.forEach(person => {
 
         memberList.appendChild(
 
-            createItem(person)
+            createMemberItem(person)
 
         );
 
     });
 
+    if (memberCount) {
+
+        memberCount.textContent =
+            `${people.length} Anggota`;
+
+    }
+
 }
 
 /* ==========================================================
-   ITEM
+   MEMBER ITEM
 ========================================================== */
 
-function createItem(person) {
+function createMemberItem(person) {
 
-    const item =
-        document.createElement("div");
+    const item = document.createElement("div");
 
-    item.className =
-        "member-item";
+    item.className = "sidebar-item";
 
-    item.dataset.id =
-        person.id;
+    const avatar = person.photo
+        ? `<img src="${person.photo}" alt="${person.fullName}">`
+        : "👤";
 
     item.innerHTML = `
 
-        <div class="member-avatar">
+        <div class="sidebar-avatar">
 
-            ${
-                person.photo
-
-                ?
-
-                `<img
-                    src="${person.photo}"
-                    alt="${person.name}">`
-
-                :
-
-                "👤"
-
-            }
+            ${avatar}
 
         </div>
 
-        <div class="member-info">
+        <div class="sidebar-info">
 
             <strong>
 
-                ${person.name}
+                ${person.fullName || "-"}
 
             </strong>
 
             <small>
 
-                Generasi
-                ${person.generation ?? "-"}
+                ID : ${person.id}
+
+            </small>
+
+            <small>
+
+                Generasi ${person.generation}
 
             </small>
 
@@ -144,95 +109,26 @@ function createItem(person) {
 
     `;
 
-    item.addEventListener(
+    item.addEventListener("click", () => {
 
-        "click",
+        document.dispatchEvent(
 
-        () => {
+            new CustomEvent(
 
-            document.dispatchEvent(
+                "member:selected",
 
-                new CustomEvent(
+                {
 
-                    "member:selected",
+                    detail: person
 
-                    {
-
-                        detail: person
-
-                    }
-
-                )
-
-            );
-
-        }
-
-    );
-
-    return item;
-
-}
-
-/* ==========================================================
-   GENERATION
-========================================================== */
-
-function populateGenerationFilter() {
-
-    if (!generationFilter)
-        return;
-
-    const generations = [
-
-        ...new Set(
-
-            Store.people.map(
-
-                person => person.generation
+                }
 
             )
-
-        )
-
-    ]
-
-    .filter(Boolean)
-
-    .sort((a, b) => a - b);
-
-    generationFilter.innerHTML =
-
-        `<option value="">
-            Semua Generasi
-        </option>`;
-
-    generations.forEach(gen => {
-
-        const option =
-            document.createElement("option");
-
-        option.value = gen;
-
-        option.textContent =
-            `Generasi ${gen}`;
-
-        generationFilter.appendChild(
-
-            option
 
         );
 
     });
 
+    return item;
+
 }
-
-/* ==========================================================
-   STORE
-========================================================== */
-
-Store.subscribe(() => {
-
-    renderSidebar();
-
-});
