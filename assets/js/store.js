@@ -2,81 +2,46 @@
  * ==========================================================
  * Family Tree v2
  * store.js
- * Version 2.0
  * ==========================================================
  */
 
-const listeners = [];
-
-export const Store = {
+const state = {
 
     people: [],
 
     search: "",
 
-    generationFilter: "",
+    generation: ""
 
-    selectedMember: null,
+};
 
-    subscribe(callback) {
+const listeners = new Set();
 
-        if (typeof callback === "function") {
+/* ==========================================================
+   STORE
+========================================================== */
 
-            listeners.push(callback);
+export const Store = {
 
-        }
+    subscribe,
 
-    },
+    notify,
 
-    notify() {
-
-        listeners.forEach(callback => callback());
-
-    },
-
-    setPeople(people) {
-
-        this.people = Array.isArray(people)
-            ? people
-            : [];
-
-        this.notify();
-
-    },
-
-    setSearch(text) {
-
-        this.search = text.trim().toLowerCase();
-
-        this.notify();
-
-    },
-
-    setGenerationFilter(generation) {
-
-        this.generationFilter = generation;
-
-        this.notify();
-
-    },
-
-    setSelectedMember(member) {
-
-        this.selectedMember = member;
-
-        this.notify();
-
-    }
+    getState
 
 };
 
 /* ==========================================================
-   SEARCH
+   INITIALIZE
 ========================================================== */
 
-export function setSearch(value) {
+export function initializeStore() {
 
-    Store.setSearch(value);
+    state.people = [];
+
+    state.search = "";
+
+    state.generation = "";
 
 }
 
@@ -86,13 +51,51 @@ export function setSearch(value) {
 
 export function setPeople(people) {
 
-    Store.setPeople(people);
+    state.people = Array.isArray(people)
+        ? people
+        : [];
+
+    notify();
 
 }
 
 export function getPeople() {
 
-    return Store.people;
+    return state.people;
+
+}
+
+export function getPerson(id) {
+
+    return state.people.find(
+
+        person => person.id === id
+
+    );
+
+}
+
+/* ==========================================================
+   SEARCH
+========================================================== */
+
+export function setSearch(value) {
+
+    state.search = value.trim();
+
+    notify();
+
+}
+
+/* ==========================================================
+   GENERATION
+========================================================== */
+
+export function setGeneration(value) {
+
+    state.generation = value;
+
+    notify();
 
 }
 
@@ -102,59 +105,78 @@ export function getPeople() {
 
 export function getFilteredPeople() {
 
-    return Store.people.filter(person => {
+    return state.people.filter(person => {
 
         const matchSearch =
 
-            !Store.search ||
+            state.search === "" ||
 
-            (person.name || "")
+            person.fullName
+
                 .toLowerCase()
-                .includes(Store.search);
+
+                .includes(
+
+                    state.search.toLowerCase()
+
+                );
 
         const matchGeneration =
 
-            !Store.generationFilter ||
+            state.generation === "" ||
 
-            String(person.generation) ===
-            String(Store.generationFilter);
+            Number(person.generation) ===
 
-        return matchSearch && matchGeneration;
+            Number(state.generation);
+
+        return (
+
+            matchSearch &&
+
+            matchGeneration
+
+        );
 
     });
 
 }
 
 /* ==========================================================
-   MEMBER
+   STATE
 ========================================================== */
 
-export function selectMember(member) {
+function getState() {
 
-    Store.setSelectedMember(member);
-
-}
-
-export function getSelectedMember() {
-
-    return Store.selectedMember;
+    return state;
 
 }
 
 /* ==========================================================
-   RESET
+   SUBSCRIBE
 ========================================================== */
 
-export function resetStore() {
+function subscribe(callback) {
 
-    Store.people = [];
-
-    Store.search = "";
-
-    Store.generationFilter = "";
-
-    Store.selectedMember = null;
-
-    Store.notify();
+    listeners.add(callback);
 
 }
+
+/* ==========================================================
+   NOTIFY
+========================================================== */
+
+function notify() {
+
+    listeners.forEach(callback => {
+
+        callback(state);
+
+    });
+
+}
+
+/* ==========================================================
+   EXPORT
+========================================================== */
+
+export default Store;
