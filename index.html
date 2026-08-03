@@ -3,49 +3,57 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="description"
-    content="Pohon Keluarga Digital">
+    <meta
+        name="description"
+        content="Pohon Keluarga Digital">
 
-<meta
-    name="theme-color"
-    content="#2d6850">
+    <meta
+        name="theme-color"
+        content="#2d6850">
 
-<title>Pohon Keluarga Kami</title>
+    <title>Pohon Keluarga Kami</title>
 
-<link rel="icon" href="favicon.ico">
+    <link
+        rel="icon"
+        href="favicon.ico">
 
-<link rel="manifest" href="manifest.json">
+    <link
+        rel="manifest"
+        href="manifest.json">
 
-<!-- CSS -->
+    <!-- ======================================================
+         CSS
+    ======================================================= -->
 
-<link rel="stylesheet" href="assets/css/00-reset.css">
-<link rel="stylesheet" href="assets/css/01-variables.css">
-<link rel="stylesheet" href="assets/css/02-base.css">
-<link rel="stylesheet" href="assets/css/03-layout.css">
-<link rel="stylesheet" href="assets/css/04-components.css">
-<link rel="stylesheet" href="assets/css/05-tree.css">
-<link rel="stylesheet" href="assets/css/06-animations.css">
-<link rel="stylesheet" href="assets/css/07-dark.css">
-<link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="assets/css/00-reset.css">
+    <link rel="stylesheet" href="assets/css/01-variables.css">
+    <link rel="stylesheet" href="assets/css/02-base.css">
+    <link rel="stylesheet" href="assets/css/03-layout.css">
+    <link rel="stylesheet" href="assets/css/04-components.css">
+    <link rel="stylesheet" href="assets/css/05-tree.css">
+    <link rel="stylesheet" href="assets/css/06-animations.css">
+    <link rel="stylesheet" href="assets/css/07-dark.css">
+    <link rel="stylesheet" href="assets/css/app.css">
 
 </head>
 
 <body>
 
-<!-- ===================================================== -->
-<!-- HEADER -->
-<!-- ===================================================== -->
+<!-- ======================================================
+     HEADER
+====================================================== -->
 
-<header class="topbar">
+<header
+    class="topbar">
 
-    <div class="brand">
+    <div
+        class="brand">
 
         <h1 id="appTitle">
 
@@ -65,21 +73,69 @@
         id="toolbar"
         class="toolbar">
 
-        <button id="btnHome" class="btn">🏠</button>
+        <button
+            id="btnHome"
+            class="btn">
 
-        <button id="zoomOut" class="btn">−</button>
+            🏠
 
-        <button id="zoomReset" class="btn">100%</button>
+        </button>
 
-        <button id="zoomIn" class="btn">+</button>
+        <button
+            id="zoomOut"
+            class="btn">
 
-        <button id="btnFit" class="btn">Fit</button>
+            −
 
-        <button id="btnCenter" class="btn">Center</button>
+        </button>
 
-        <button id="btnTheme" class="btn">🌙</button>
+        <button
+            id="zoomReset"
+            class="btn">
 
-        <button id="btnPrint" class="btn">🖨</button>
+            100%
+
+        </button>
+
+        <button
+            id="zoomIn"
+            class="btn">
+
+            +
+
+        </button>
+
+        <button
+            id="btnFit"
+            class="btn">
+
+            Fit
+
+        </button>
+
+        <button
+            id="btnCenter"
+            class="btn">
+
+            Center
+
+        </button>
+
+        <button
+            id="btnTheme"
+            class="btn">
+
+            🌙
+
+        </button>
+
+        <button
+            id="btnPrint"
+            class="btn">
+
+            🖨
+
+        </button>
 
         <button
             id="btnAddMember"
@@ -93,70 +149,113 @@
 
 </header>
 
-<!-- ===================================================== -->
-<!-- MAIN -->
-<!-- ===================================================== -->
+<!-- ======================================================
+     MAIN LAYOUT
+====================================================== -->
 
-<div class="app-layout">
+<div
+    id="appLayout"
+    class="app-layout">
+<!-- ======================================================
+     SIDEBAR
+====================================================== -->
 
-    <!-- SIDEBAR -->
+<aside
+    id="sidebar"
+    class="sidebar">
 
-    <aside
-        id="sidebar"
-        class="sidebar">
+    <div
+        class="sidebar-header">
 
-        <div class="sidebar-search">
+        <h2>
 
-            <input
-                id="searchInput"
-                type="search"
-                placeholder="Cari anggota...">
+            Anggota Keluarga
 
-            <select id="generationFilter">
+        </h2>
 
-                <option value="">
+        <p
+            id="memberCount">
 
-                    Semua Generasi
+            0 Anggota
 
-                </option>
+        </p>
 
-            </select>
+    </div>
 
-            <p id="memberCount">
+    <!-- SEARCH -->
 
-                0 Anggota
+    <div
+        class="sidebar-search">
 
-            </p>
+        <input
+            id="searchInput"
+            type="search"
+            autocomplete="off"
+            placeholder="Cari nama...">
 
-        </div>
+    </div>
 
-        <div
-            id="memberList"
-            class="sidebar-list">
+    <!-- FILTER -->
 
-        </div>
+    <div
+        class="sidebar-filter">
 
-    </aside>
+        <label
+            for="generationFilter">
 
-    <!-- TREE -->
+            Generasi
 
-    <main
-        id="treeArea"
-        class="tree-area">
+        </label>
+
+        <select
+            id="generationFilter">
+
+            <option value="">
+
+                Semua Generasi
+
+            </option>
+
+        </select>
+
+    </div>
+
+    <!-- MEMBER LIST -->
+
+    <div
+        id="memberList"
+        class="sidebar-list">
+
+    </div>
+
+</aside>
+<!-- ======================================================
+     TREE AREA
+====================================================== -->
+
+<main
+    id="treeArea"
+    class="tree-area">
+
+    <div
+        id="treeViewport"
+        class="tree-viewport">
+
+        <!-- SVG CONNECTION LAYER -->
+
+        <svg
+            id="treeSvg"
+            class="tree-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true">
+
+        </svg>
+
+        <!-- NODE LAYER -->
 
         <div
             id="treeCanvas"
             class="tree-canvas">
-
-            <!-- SVG CONNECTIONS -->
-
-            <svg
-                id="treeSvg"
-                class="tree-svg">
-
-            </svg>
-
-            <!-- NODE LAYER -->
 
             <div
                 id="treeNodes"
@@ -166,47 +265,177 @@
 
         </div>
 
-    </main>
+    </div>
 
-    <!-- DETAIL -->
+</main>
+<!-- ======================================================
+     DETAIL PANEL
+====================================================== -->
 
-    <aside
-        id="detailPanel"
-        class="detail-panel">
+<aside
+    id="detailPanel"
+    class="detail-panel">
 
-        <div id="detailContent">
+    <div
+        class="detail-header">
 
-            <p>
+        <img
+            id="detailPhoto"
+            class="detail-photo"
+            src=""
+            alt="Foto Anggota">
 
-                Pilih anggota keluarga.
+        <div
+            class="detail-title">
+
+            <h2
+                id="detailName">
+
+                Pilih Anggota
+
+            </h2>
+
+            <p
+                id="detailId">
+
+                -
 
             </p>
 
         </div>
 
-    </aside>
+    </div>
 
-</div>
+    <div
+        class="detail-body">
 
-<!-- ===================================================== -->
-<!-- DIALOG -->
-<!-- ===================================================== -->
+        <div
+            class="detail-row">
 
-<dialog id="memberDialog">
+            <span
+                class="detail-label">
 
-    <div class="dialog-window">
+                Generasi
 
-        <header class="dialog-header">
+            </span>
 
-            <h2>
+            <span
+                id="detailGeneration"
+                class="detail-value">
 
-                Tambah Anggota
+                -
+
+            </span>
+
+        </div>
+
+        <div
+            class="detail-row">
+
+            <span
+                class="detail-label">
+
+                Ayah
+
+            </span>
+
+            <span
+                id="detailFather"
+                class="detail-value">
+
+                -
+
+            </span>
+
+        </div>
+
+        <div
+            class="detail-row">
+
+            <span
+                class="detail-label">
+
+                Ibu
+
+            </span>
+
+            <span
+                id="detailMother"
+                class="detail-value">
+
+                -
+
+            </span>
+
+        </div>
+
+        <div
+            class="detail-row">
+
+            <span
+                class="detail-label">
+
+                Pasangan
+
+            </span>
+
+            <span
+                id="detailSpouse"
+                class="detail-value">
+
+                -
+
+            </span>
+
+        </div>
+
+        <div
+            class="detail-section">
+
+            <h3>
+
+                Catatan
+
+            </h3>
+
+            <div
+                id="detailNotes"
+                class="detail-notes">
+
+                -
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+<!-- ======================================================
+     DIALOG
+====================================================== -->
+
+<dialog
+    id="memberDialog"
+    class="member-dialog">
+
+    <div
+        class="dialog-window">
+
+        <header
+            class="dialog-header">
+
+            <h2
+                id="dialogTitle">
+
+                Anggota Keluarga
 
             </h2>
 
             <button
+                id="btnDialogClose"
                 class="btn"
-                onclick="this.closest('dialog').close()">
+                type="button">
 
                 ✕
 
@@ -215,20 +444,14 @@
         </header>
 
         <section
-            id="dialogBody">
+            id="dialogBody"
+            class="dialog-body">
 
         </section>
 
         <footer
-            id="dialogFooter">
-
-            <button
-                class="btn"
-                onclick="this.closest('dialog').close()">
-
-                Tutup
-
-            </button>
+            id="dialogFooter"
+            class="dialog-footer">
 
         </footer>
 
@@ -236,27 +459,33 @@
 
 </dialog>
 
-<!-- ===================================================== -->
-<!-- LOADING -->
-<!-- ===================================================== -->
+</div>
+
+<!-- ======================================================
+     LOADING
+====================================================== -->
 
 <div
     id="loading"
-    class="loading-overlay hidden">
+    class="loading-overlay"
+    hidden>
 
-    <div class="loader"></div>
+    <div
+        class="loader">
+
+    </div>
 
     <p>
 
-        Memuat data keluarga...
+        Memuat data...
 
     </p>
 
 </div>
 
-<!-- ===================================================== -->
-<!-- TOAST -->
-<!-- ===================================================== -->
+<!-- ======================================================
+     TOAST
+====================================================== -->
 
 <div
     id="toastContainer"
@@ -264,9 +493,9 @@
 
 </div>
 
-<!-- ===================================================== -->
-<!-- FOOTER -->
-<!-- ===================================================== -->
+<!-- ======================================================
+     FOOTER
+====================================================== -->
 
 <footer
     id="appFooter"
@@ -286,9 +515,9 @@
 
 </footer>
 
-<!-- ===================================================== -->
-<!-- APP -->
-<!-- ===================================================== -->
+<!-- ======================================================
+     APPLICATION
+====================================================== -->
 
 <script
     type="module"
@@ -297,4 +526,5 @@
 </script>
 
 </body>
+
 </html>
