@@ -2,33 +2,81 @@
  * ==========================================================
  * Family Tree v2
  * app.js
+ * Application Bootstrap
  * ==========================================================
  */
 
 import { CONFIG } from "./config.js";
 
-import { setPeople } from "./store.js";
+import {
 
-import { loadPeople } from "./api.js";
+    initializeStore,
 
-import { initializeRouter } from "./router.js";
+    setPeople
 
-import { initializeHeader } from "./components/header.js";
-
-import { initializeToolbar } from "./components/toolbar.js";
-
-import { initializeSidebar } from "./components/sidebar.js";
-
-import { initializeSearchBox } from "./components/searchBox.js";
-
-import { initializeDetailPanel } from "./components/detailPanel.js";
+} from "./store.js";
 
 import {
 
-    initializeTree,
+    loadPeople
+
+} from "./api.js";
+
+import {
+
+    initializeRouter
+
+} from "./router.js";
+
+import {
+
+    initializeHeader
+
+} from "./components/header.js";
+
+import {
+
+    initializeToolbar
+
+} from "./components/toolbar.js";
+
+import {
+
+    initializeSidebar
+
+} from "./components/sidebar.js";
+
+import {
+
+    initializeSearchBox
+
+} from "./components/searchBox.js";
+
+import {
+
+    initializeDetailPanel
+
+} from "./components/detailPanel.js";
+
+import {
+
+    initializeDialog
+
+} from "./components/dialog.js";
+
+import {
+
+    initializeTreeCanvas,
+
     renderTree
 
 } from "./components/treeCanvas.js";
+
+import {
+
+    Toast
+
+} from "./components/toast.js";
 
 /* ==========================================================
    START
@@ -54,19 +102,15 @@ async function startApplication() {
 
         console.log(
 
-            CONFIG.APP_NAME,
-
-            CONFIG.VERSION
+            `${CONFIG.APP_NAME} ${CONFIG.VERSION}`
 
         );
 
-        /* -------------------------
-           UI
-        -------------------------- */
-
-        initializeHeader();
+        initializeStore();
 
         initializeRouter();
+
+        initializeHeader();
 
         initializeToolbar();
 
@@ -76,23 +120,17 @@ async function startApplication() {
 
         initializeDetailPanel();
 
-        initializeTree();
+        initializeDialog();
 
-        /* -------------------------
-           DATA
-        -------------------------- */
+        initializeTreeCanvas();
 
-        const people = await loadPeople();
-
-        setPeople(people);
-
-        renderTree();
+        await loadApplication();
 
         bindEvents();
 
-        console.log(
+        Toast.success(
 
-            "Family Tree berhasil dimuat."
+            "Aplikasi siap."
 
         );
 
@@ -100,11 +138,11 @@ async function startApplication() {
 
     catch (error) {
 
-        console.error(
+        console.error(error);
 
-            "Application Error",
+        Toast.error(
 
-            error
+            "Gagal menjalankan aplikasi."
 
         );
 
@@ -119,22 +157,88 @@ async function startApplication() {
 }
 
 /* ==========================================================
+   LOAD
+========================================================== */
+
+async function loadApplication() {
+
+    const people =
+
+        await loadPeople();
+
+    setPeople(people);
+
+    renderTree();
+
+}
+
+/* ==========================================================
    EVENTS
 ========================================================== */
 
 function bindEvents() {
 
-    window.addEventListener(
+    document.addEventListener(
 
-        "resize",
+        CONFIG.EVENTS.DATA_UPDATED,
 
-        debounce(() => {
-
-            renderTree();
-
-        })
+        reloadApplication
 
     );
+
+    document.addEventListener(
+
+        CONFIG.EVENTS.TREE_REFRESH,
+
+        renderTree
+
+    );
+
+}
+
+/* ==========================================================
+   RELOAD
+========================================================== */
+
+export async function reloadApplication() {
+
+    try {
+
+        showLoading(true);
+
+        const people =
+
+            await loadPeople();
+
+        setPeople(people);
+
+        renderTree();
+
+        Toast.success(
+
+            "Data diperbarui."
+
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        Toast.error(
+
+            "Gagal memuat ulang."
+
+        );
+
+    }
+
+    finally {
+
+        showLoading(false);
+
+    }
 
 }
 
@@ -142,65 +246,40 @@ function bindEvents() {
    LOADING
 ========================================================== */
 
-function showLoading(show = true) {
+function showLoading(show) {
 
     const loading =
 
-        document.querySelector("#loading");
+        document.querySelector(
+
+            "#loading"
+
+        );
 
     if (!loading)
+
         return;
 
-    loading.classList.toggle(
-
-        "hidden",
-
-        !show
-
-    );
+    loading.hidden = !show;
 
 }
 
 /* ==========================================================
-   DEBOUNCE
-========================================================== */
-
-function debounce(callback, delay = 250) {
-
-    let timer;
-
-    return (...args) => {
-
-        clearTimeout(timer);
-
-        timer = setTimeout(() => {
-
-            callback(...args);
-
-        }, delay);
-
-    };
-
-}
-
-/* ==========================================================
-   GLOBAL
+   DEBUG
 ========================================================== */
 
 window.App = {
 
-    renderTree,
+    reload:
 
-    reload: async () => {
+        reloadApplication,
 
-        const people = await loadPeople();
+    render:
 
-        setPeople(people);
+        renderTree,
 
-        renderTree();
+    config:
 
-    },
-
-    config: CONFIG
+        CONFIG
 
 };
