@@ -455,12 +455,7 @@ export const Dialog = {
     close
 
 };
-export const Dialog = {
-    initialize: initializeDialog,
-    openAddMember,
-    openEditMember,
-    close
-};
+
 /* ==========================================================
    HELPER
 ========================================================== */
