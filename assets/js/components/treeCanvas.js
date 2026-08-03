@@ -2,28 +2,83 @@
  * ==========================================================
  * Family Tree v2
  * treeCanvas.js
- * FamilyEcho Layout Engine
+ * Tree Canvas Renderer
  * ==========================================================
  */
 
-import { Store, getFilteredPeople } from "../store.js";
-import { createTreeNode } from "./treeNode.js";
+import {
 
-const SVG_NS = "http://www.w3.org/2000/svg";
+    subscribe
 
-const canvas = document.querySelector("#treeCanvas");
-const svg = document.querySelector("#treeSvg");
-const nodes = document.querySelector("#treeNodes");
+} from "../store.js";
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 110;
+import {
 
-const H_SPACE = 60;
-const V_SPACE = 180;
+    buildFamilyLayout,
+
+    flattenLayout
+
+} from "./autoLayout.js";
+
+import {
+
+    drawConnections
+
+} from "./connector.js";
+
+import {
+
+    createTreeNode
+
+} from "./treeNode.js";
+
+import {
+
+    TREE
+
+} from "../utils/constants.js";
+
+/* ==========================================================
+   ELEMENTS
+========================================================== */
+
+let treeArea = null;
+
+let canvas = null;
+
+let nodesLayer = null;
+
+let svgLayer = null;
+
+/* ==========================================================
+   VIEWPORT
+========================================================== */
 
 let zoom = 1;
-let panX = 40;
-let panY = 40;
+
+let panX = TREE.ROOT_OFFSET_X;
+
+let panY = TREE.ROOT_OFFSET_Y;
+
+/* ==========================================================
+   DRAG
+========================================================== */
+
+let dragging = false;
+
+let dragStartX = 0;
+
+let dragStartY = 0;
+
+let startPanX = 0;
+
+let startPanY = 0;
+
+/* ==========================================================
+   ANIMATION
+========================================================== */
+
+let frameRequest = null;
 
 /* ==========================================================
    PUBLIC
@@ -31,142 +86,138 @@ let panY = 40;
 
 export function initializeTreeCanvas() {
 
-    bindCanvasEvents();
+    treeArea =
 
-    renderTree();
+        document.querySelector(
 
-}
+            "#treeArea"
 
-export function renderTree() {
+        );
 
-    svg.innerHTML = "";
-    nodes.innerHTML = "";
+    canvas =
 
-    const people = getFilteredPeople();
+        document.querySelector(
 
-    const layout = buildFamilyLayout(people);
+            "#treeCanvas"
 
-    drawConnections(layout);
+        );
 
-    drawNodes(layout);
+    nodesLayer =
+
+        document.querySelector(
+
+            "#treeNodes"
+
+        );
+
+    svgLayer =
+
+        document.querySelector(
+
+            "#treeSvg"
+
+        );
+
+    if (
+
+        !treeArea ||
+
+        !canvas ||
+
+        !nodesLayer ||
+
+        !svgLayer
+
+    ) {
+
+        console.error(
+
+            "Tree Canvas not found."
+
+        );
+
+        return;
+
+    }
+
+    subscribe(renderTree);
+
+    bindPointerEvents();
+
+    bindWheelEvent();
 
     updateTransform();
 
 }
 
 /* ==========================================================
-   FAMILY LAYOUT
+   HELPERS
 ========================================================== */
 
-function buildFamilyLayout(people){
+function clearCanvas() {
 
-    const map = new Map();
+    nodesLayer.replaceChildren();
 
-    people.forEach(person=>{
+    svgLayer.replaceChildren();
 
-        map.set(person.id,{
-            ...person,
-            x:0,
-            y:0,
-            children:[]
-        });
+}
+/* ==========================================================
+   RENDER
+========================================================== */
 
-    });
+export function renderTree() {
 
-    map.forEach(person=>{
+    if (
 
-        if(person.fatherId && map.has(person.fatherId)){
+        !nodesLayer ||
 
-            map.get(person.fatherId)
-                .children.push(person);
+        !svgLayer
 
-        }
+    ) {
 
-        if(person.motherId && map.has(person.motherId)){
-
-            map.get(person.motherId)
-                .children.push(person);
-
-        }
-
-    });
-
-    let currentX = 0;
-
-    function layout(person,level){
-
-        person.y = level * V_SPACE;
-
-        if(person.children.length===0){
-
-            person.x = currentX;
-
-            currentX += NODE_WIDTH + H_SPACE;
-
-            return;
-
-        }
-
-        person.children.forEach(child=>{
-
-            layout(child,level+1);
-
-        });
-
-        const first = person.children[0];
-        const last = person.children.at(-1);
-
-        person.x =
-
-            (first.x + last.x) / 2;
+        return;
 
     }
 
-    map.forEach(person=>{
+    clearCanvas();
 
-        if(
-            !person.fatherId &&
-            !person.motherId
-        ){
+    const tree =
 
-            layout(person,0);
+        buildFamilyLayout();
 
-        }
+    const layout =
 
-    });
+        flattenLayout(tree);
 
-    map.forEach(person=>{
+    drawConnections(
 
-        if(
-            person.spouseId &&
-            map.has(person.spouseId)
-        ){
+        svgLayer,
 
-            const spouse = map.get(person.spouseId);
+        tree
 
-            spouse.x =
+    );
 
-                person.x + NODE_WIDTH + 30;
+    drawNodes(layout);
 
-            spouse.y = person.y;
+    updateCanvasSize(layout);
 
-        }
-
-    });
-
-    return [...map.values()];
+    updateTransform();
 
 }
 
 /* ==========================================================
-   DRAW
+   DRAW NODES
 ========================================================== */
 
-function drawNodes(layout){
+function drawNodes(layout) {
 
-    layout.forEach(person=>{
+    const fragment =
 
-        nodes.appendChild(
+        document.createDocumentFragment();
+
+    layout.forEach(person => {
+
+        fragment.appendChild(
 
             createTreeNode(person)
 
@@ -174,227 +225,627 @@ function drawNodes(layout){
 
     });
 
+    nodesLayer.appendChild(
+
+        fragment
+
+    );
+
 }
 
 /* ==========================================================
-   CONNECTIONS
+   CANVAS SIZE
 ========================================================== */
 
-function drawConnections(layout){
+function updateCanvasSize(layout) {
 
-    const map = new Map();
+    if (!layout.length)
 
-    layout.forEach(p=>map.set(p.id,p));
+        return;
 
-    layout.forEach(child=>{
+    let maxX = 0;
 
-        if(child.fatherId){
+    let maxY = 0;
 
-            const father = map.get(child.fatherId);
+    layout.forEach(person => {
 
-            if(father){
+        maxX = Math.max(
 
-                connect(father,child);
+            maxX,
 
-            }
+            person.x +
 
-        }
+            TREE.NODE_WIDTH
 
-        if(child.motherId){
+        );
 
-            const mother = map.get(child.motherId);
+        maxY = Math.max(
 
-            if(mother){
+            maxY,
 
-                connect(mother,child);
+            person.y +
 
-            }
+            TREE.NODE_HEIGHT
 
-        }
-
-        if(child.spouseId){
-
-            const spouse = map.get(child.spouseId);
-
-            if(spouse){
-
-                connectSpouse(child,spouse);
-
-            }
-
-        }
+        );
 
     });
 
-}
+    canvas.style.width =
 
-function connect(parent,child){
+        `${
 
-    createCurve(
+            maxX +
 
-        parent.x + NODE_WIDTH/2,
+            TREE.HORIZONTAL_GAP
 
-        parent.y + NODE_HEIGHT,
+        }px`;
 
-        child.x + NODE_WIDTH/2,
+    canvas.style.height =
 
-        child.y
+        `${
+
+            maxY +
+
+            TREE.VERTICAL_GAP
+
+        }px`;
+
+    svgLayer.setAttribute(
+
+        "width",
+
+        maxX +
+
+        TREE.HORIZONTAL_GAP
+
+    );
+
+    svgLayer.setAttribute(
+
+        "height",
+
+        maxY +
+
+        TREE.VERTICAL_GAP
 
     );
 
 }
-
-function connectSpouse(a,b){
-
-    const line = document.createElementNS(
-
-        SVG_NS,
-
-        "line"
-
-    );
-
-    line.setAttribute(
-
-        "x1",
-
-        a.x + NODE_WIDTH
-
-    );
-
-    line.setAttribute(
-
-        "y1",
-
-        a.y + NODE_HEIGHT/2
-
-    );
-
-    line.setAttribute(
-
-        "x2",
-
-        b.x
-
-    );
-
-    line.setAttribute(
-
-        "y2",
-
-        b.y + NODE_HEIGHT/2
-
-    );
-
-    line.setAttribute("stroke","#49d67f");
-
-    line.setAttribute("stroke-width","3");
-
-    svg.appendChild(line);
-
-}
-
-function createCurve(x1,y1,x2,y2){
-
-    const path = document.createElementNS(
-
-        SVG_NS,
-
-        "path"
-
-    );
-
-    const m = (y1+y2)/2;
-
-    path.setAttribute(
-
-        "d",
-
-        `M ${x1} ${y1}
-         C ${x1} ${m}
-           ${x2} ${m}
-           ${x2} ${y2}`
-
-    );
-
-    path.setAttribute("fill","none");
-
-    path.setAttribute("stroke","#49d67f");
-
-    path.setAttribute("stroke-width","3");
-
-    path.classList.add("tree-line");
-
-    svg.appendChild(path);
-
-}
-
 /* ==========================================================
    ZOOM
 ========================================================== */
 
-export function zoomIn(){
+export function zoomIn() {
 
-    zoom=Math.min(zoom+0.1,2.5);
+    setZoom(
+
+        zoom +
+
+        TREE.ZOOM_STEP
+
+    );
+
+}
+
+export function zoomOut() {
+
+    setZoom(
+
+        zoom -
+
+        TREE.ZOOM_STEP
+
+    );
+
+}
+
+export function resetZoom() {
+
+    zoom = 1;
+
+    panX = TREE.ROOT_OFFSET_X;
+
+    panY = TREE.ROOT_OFFSET_Y;
 
     updateTransform();
 
 }
 
-export function zoomOut(){
+function setZoom(value) {
 
-    zoom=Math.max(zoom-0.1,0.3);
+    zoom = Math.min(
 
-    updateTransform();
+        TREE.MAX_ZOOM,
 
-}
+        Math.max(
 
-export function resetZoom(){
+            TREE.MIN_ZOOM,
 
-    zoom=1;
+            value
 
-    panX=40;
+        )
 
-    panY=40;
-
-    updateTransform();
-
-}
-
-export function centerTree(){
-
-    panX=40;
-
-    panY=40;
+    );
 
     updateTransform();
 
 }
 
-export function fitTree(){
+/* ==========================================================
+   CENTER
+========================================================== */
 
-    zoom=1;
+export function centerTree() {
+
+    if (
+
+        !treeArea ||
+
+        !canvas
+
+    ) {
+
+        return;
+
+    }
+
+    const viewWidth =
+
+        treeArea.clientWidth;
+
+    const viewHeight =
+
+        treeArea.clientHeight;
+
+    const treeWidth =
+
+        canvas.offsetWidth * zoom;
+
+    const treeHeight =
+
+        canvas.offsetHeight * zoom;
+
+    panX =
+
+        Math.max(
+
+            20,
+
+            (viewWidth - treeWidth) / 2
+
+        );
+
+    panY =
+
+        Math.max(
+
+            20,
+
+            (viewHeight - treeHeight) / 2
+
+        );
+
+    updateTransform();
+
+}
+
+/* ==========================================================
+   FIT
+========================================================== */
+
+export function fitTree() {
+
+    if (
+
+        !treeArea ||
+
+        !canvas
+
+    ) {
+
+        return;
+
+    }
+
+    const scaleX =
+
+        treeArea.clientWidth /
+
+        canvas.offsetWidth;
+
+    const scaleY =
+
+        treeArea.clientHeight /
+
+        canvas.offsetHeight;
+
+    zoom = Math.min(
+
+        TREE.MAX_ZOOM,
+
+        Math.max(
+
+            TREE.MIN_ZOOM,
+
+            Math.min(
+
+                scaleX,
+
+                scaleY
+
+            ) * 0.9
+
+        )
+
+    );
 
     centerTree();
 
 }
 
-function updateTransform(){
+/* ==========================================================
+   TRANSFORM
+========================================================== */
 
-    const t=
+function updateTransform() {
 
-        `translate(${panX}px,${panY}px) scale(${zoom})`;
+    if (
 
-    nodes.style.transform=t;
+        frameRequest !== null
 
-    svg.style.transform=t;
+    ) {
+
+        cancelAnimationFrame(
+
+            frameRequest
+
+        );
+
+    }
+
+    frameRequest =
+
+        requestAnimationFrame(() => {
+
+            canvas.style.transform =
+
+                `translate(${panX}px, ${panY}px) scale(${zoom})`;
+
+            frameRequest = null;
+
+        });
+
+}
+/* ==========================================================
+   POINTER EVENTS
+========================================================== */
+
+function bindPointerEvents() {
+
+    treeArea.addEventListener(
+
+        "mousedown",
+
+        onPointerDown
+
+    );
+
+    window.addEventListener(
+
+        "mousemove",
+
+        onPointerMove
+
+    );
+
+    window.addEventListener(
+
+        "mouseup",
+
+        onPointerUp
+
+    );
+
+    treeArea.addEventListener(
+
+        "mouseleave",
+
+        onPointerUp
+
+    );
 
 }
 
-function bindCanvasEvents(){
+/* ==========================================================
+   WHEEL
+========================================================== */
 
-    /* sama seperti versi Anda */
+function bindWheelEvent() {
+
+    treeArea.addEventListener(
+
+        "wheel",
+
+        onWheel,
+
+        {
+
+            passive: false
+
+        }
+
+    );
 
 }
 
-Store.subscribe(renderTree);
+/* ==========================================================
+   POINTER DOWN
+========================================================== */
+
+function onPointerDown(event) {
+
+    if (
+
+        event.button !== 0
+
+    ) {
+
+        return;
+
+    }
+
+    dragging = true;
+
+    dragStartX = event.clientX;
+
+    dragStartY = event.clientY;
+
+    startPanX = panX;
+
+    startPanY = panY;
+
+    treeArea.classList.add(
+
+        "dragging"
+
+    );
+
+}
+
+/* ==========================================================
+   POINTER MOVE
+========================================================== */
+
+function onPointerMove(event) {
+
+    if (!dragging)
+
+        return;
+
+    panX =
+
+        startPanX +
+
+        (
+
+            event.clientX -
+
+            dragStartX
+
+        );
+
+    panY =
+
+        startPanY +
+
+        (
+
+            event.clientY -
+
+            dragStartY
+
+        );
+
+    updateTransform();
+
+}
+
+/* ==========================================================
+   POINTER UP
+========================================================== */
+
+function onPointerUp() {
+
+    dragging = false;
+
+    treeArea.classList.remove(
+
+        "dragging"
+
+    );
+
+}
+
+/* ==========================================================
+   WHEEL ZOOM
+========================================================== */
+
+function onWheel(event) {
+
+    event.preventDefault();
+
+    const direction =
+
+        event.deltaY > 0
+
+            ? -1
+
+            : 1;
+
+    setZoom(
+
+        zoom +
+
+        direction *
+
+        TREE.ZOOM_STEP
+
+    );
+
+}
+/* ==========================================================
+   RESIZE
+========================================================== */
+
+function onResize() {
+
+    renderTree();
+
+}
+
+/* ==========================================================
+   DESTROY
+========================================================== */
+
+export function destroyTree() {
+
+    if (!treeArea)
+
+        return;
+
+    treeArea.removeEventListener(
+
+        "mousedown",
+
+        onPointerDown
+
+    );
+
+    treeArea.removeEventListener(
+
+        "mouseleave",
+
+        onPointerUp
+
+    );
+
+    treeArea.removeEventListener(
+
+        "wheel",
+
+        onWheel
+
+    );
+
+    window.removeEventListener(
+
+        "mousemove",
+
+        onPointerMove
+
+    );
+
+    window.removeEventListener(
+
+        "mouseup",
+
+        onPointerUp
+
+    );
+
+    window.removeEventListener(
+
+        "resize",
+
+        onResize
+
+    );
+
+    clearCanvas();
+
+    treeArea = null;
+
+    canvas = null;
+
+    nodesLayer = null;
+
+    svgLayer = null;
+
+}
+
+/* ==========================================================
+   INIT EVENTS
+========================================================== */
+
+window.addEventListener(
+
+    "resize",
+
+    onResize
+
+);
+
+/* ==========================================================
+   PUBLIC STATE
+========================================================== */
+
+export function getViewport() {
+
+    return {
+
+        zoom,
+
+        panX,
+
+        panY
+
+    };
+
+}
+
+export function setViewport(viewport = {}) {
+
+    zoom =
+
+        Number(viewport.zoom) ||
+
+        zoom;
+
+    panX =
+
+        Number(viewport.panX) ||
+
+        panX;
+
+    panY =
+
+        Number(viewport.panY) ||
+
+        panY;
+
+    updateTransform();
+
+}
+
+/* ==========================================================
+   DEBUG
+========================================================== */
+
+window.TreeCanvas = {
+
+    render: renderTree,
+
+    center: centerTree,
+
+    fit: fitTree,
+
+    zoomIn,
+
+    zoomOut,
+
+    resetZoom,
+
+    viewport: getViewport
+
+};
