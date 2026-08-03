@@ -2,21 +2,102 @@
  * ==========================================================
  * Family Tree v2
  * router.js
- * SPA Hash Router
  * ==========================================================
  */
 
-import { CONFIG } from "./config.js";
-
 const routes = new Map();
 
+let currentRoute = "";
+
 /* ==========================================================
-   REGISTER ROUTE
+   PUBLIC
 ========================================================== */
 
-export function registerRoute(path, callback) {
+export function initializeRouter() {
 
-    routes.set(path, callback);
+    registerRoutes();
+
+    window.addEventListener(
+
+        "hashchange",
+
+        handleHashChange
+
+    );
+
+    document.addEventListener(
+
+        "route:tree",
+
+        () => navigate("tree")
+
+    );
+
+    document.addEventListener(
+
+        "route:timeline",
+
+        () => navigate("timeline")
+
+    );
+
+    document.addEventListener(
+
+        "route:statistics",
+
+        () => navigate("statistics")
+
+    );
+
+    document.addEventListener(
+
+        "route:settings",
+
+        () => navigate("settings")
+
+    );
+
+    handleHashChange();
+
+}
+
+/* ==========================================================
+   ROUTES
+========================================================== */
+
+function registerRoutes() {
+
+    routes.set(
+
+        "tree",
+
+        () => showView("treeView")
+
+    );
+
+    routes.set(
+
+        "timeline",
+
+        () => showView("timelineView")
+
+    );
+
+    routes.set(
+
+        "statistics",
+
+        () => showView("statisticsView")
+
+    );
+
+    routes.set(
+
+        "settings",
+
+        () => showView("settingsView")
+
+    );
 
 }
 
@@ -24,238 +105,80 @@ export function registerRoute(path, callback) {
    NAVIGATE
 ========================================================== */
 
-export function navigate(path) {
+export function navigate(route) {
 
-    if (location.hash !== path) {
+    if (!routes.has(route))
 
-        location.hash = path;
+        route = "tree";
 
-    } else {
+    if (currentRoute === route)
 
-        handleRoute();
+        return;
 
-    }
+    window.location.hash =
 
-}
-
-/* ==========================================================
-   CURRENT
-========================================================== */
-
-export function currentRoute() {
-
-    return location.hash || CONFIG.ROUTES.HOME;
+        route;
 
 }
 
 /* ==========================================================
-   ROUTER
+   HASH
 ========================================================== */
 
-export function initializeRouter() {
+function handleHashChange() {
 
-    /* ---------- Default Routes ---------- */
+    const hash =
 
-    registerRoute(CONFIG.ROUTES.HOME, () => {
+        window.location.hash
 
-        showPage("tree");
+            .replace("#", "")
 
-    });
+            .trim() ||
 
-    registerRoute(CONFIG.ROUTES.TREE, () => {
+        "tree";
 
-        showPage("tree");
+    currentRoute = hash;
 
-    });
+    const handler =
 
-    registerRoute(CONFIG.ROUTES.MEMBER, () => {
+        routes.get(hash) ||
 
-        showPage("member");
+        routes.get("tree");
 
-    });
-
-    registerRoute(CONFIG.ROUTES.TIMELINE, () => {
-
-        showPage("timeline");
-
-    });
-
-    registerRoute(CONFIG.ROUTES.STATISTICS, () => {
-
-        showPage("statistics");
-
-    });
-
-    registerRoute(CONFIG.ROUTES.SETTINGS, () => {
-
-        showPage("settings");
-
-    });
-
-    window.addEventListener(
-
-        "hashchange",
-
-        handleRoute
-
-    );
-
-    handleRoute();
+    handler();
 
 }
 
 /* ==========================================================
-   HANDLE ROUTE
+   VIEW
 ========================================================== */
 
-function handleRoute() {
+function showView(id) {
 
-    const hash = currentRoute();
+    document
 
-    const callback = routes.get(hash);
+        .querySelectorAll(
 
-    if (callback) {
+            ".app-view"
 
-        callback();
+        )
 
-    } else {
+        .forEach(view => {
 
-        navigate(CONFIG.ROUTES.HOME);
+            view.hidden =
 
-    }
+                view.id !== id;
+
+        });
 
 }
 
 /* ==========================================================
-   PAGE VISIBILITY
+   INFO
 ========================================================== */
 
-function showPage(page) {
+export function getCurrentRoute() {
 
-    hideAllPages();
-
-    switch (page) {
-
-        case "tree":
-
-            show("#treeCanvas");
-
-            show("#sidebar");
-
-            show("#detailPanel");
-
-            break;
-
-        case "member":
-
-            show("#memberForm");
-
-            break;
-
-        case "timeline":
-
-            show("#timelinePage");
-
-            break;
-
-        case "statistics":
-
-            show("#statisticsPage");
-
-            break;
-
-        case "settings":
-
-            show("#settingsPage");
-
-            break;
-
-    }
-
-}
-
-/* ==========================================================
-   HELPERS
-========================================================== */
-
-function hideAllPages() {
-
-    [
-
-        "#treeCanvas",
-
-        "#sidebar",
-
-        "#detailPanel",
-
-        "#memberForm",
-
-        "#timelinePage",
-
-        "#statisticsPage",
-
-        "#settingsPage"
-
-    ].forEach(selector => {
-
-        const element = document.querySelector(selector);
-
-        if (element) {
-
-            element.hidden = true;
-
-        }
-
-    });
-
-}
-
-function show(selector) {
-
-    const element = document.querySelector(selector);
-
-    if (!element) return;
-
-    element.hidden = false;
-
-}
-
-/* ==========================================================
-   SHORTCUTS
-========================================================== */
-
-export function goHome() {
-
-    navigate(CONFIG.ROUTES.HOME);
-
-}
-
-export function goTree() {
-
-    navigate(CONFIG.ROUTES.TREE);
-
-}
-
-export function goTimeline() {
-
-    navigate(CONFIG.ROUTES.TIMELINE);
-
-}
-
-export function goStatistics() {
-
-    navigate(CONFIG.ROUTES.STATISTICS);
-
-}
-
-export function goSettings() {
-
-    navigate(CONFIG.ROUTES.SETTINGS);
-
-}
-
-export function goMember() {
-
-    navigate(CONFIG.ROUTES.MEMBER);
+    return currentRoute;
 
 }
