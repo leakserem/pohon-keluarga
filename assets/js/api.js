@@ -12,7 +12,17 @@ import { CONFIG } from "./config.js";
    URL
 ========================================================== */
 
-const API_URL = CONFIG.API.URL;
+const API_URL = CONFIG.API.BASE_URL;
+
+if (!API_URL) {
+
+    throw new Error(
+
+        "CONFIG.API.BASE_URL belum diatur."
+
+    );
+
+}
 
 /* ==========================================================
    REQUEST
