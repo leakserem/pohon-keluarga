@@ -1,127 +1,192 @@
 /**
  * ==========================================================
  * Family Tree v2
- * Header Component
+ * header.js
  * ==========================================================
  */
 
-import { CONFIG } from "../config.js";
+import {
+
+    CONFIG
+
+} from "../config.js";
+
+import {
+
+    Toast
+
+} from "./toast.js";
+
+import {
+
+    navigate
+
+} from "../router.js";
+
+/* ==========================================================
+   ELEMENTS
+========================================================== */
+
+let appName;
+
+let appVersion;
+
+let btnHome;
+
+let btnRefresh;
+
+let btnAbout;
+
+/* ==========================================================
+   PUBLIC
+========================================================== */
 
 export function initializeHeader() {
 
-    const brand = document.querySelector(".brand");
-    const homeButton = document.querySelector("#homeButton");
-    const addButton = document.querySelector("#addButton");
-    const printButton = document.querySelector(".print-button");
+    appName =
 
-    if (brand) {
-        brand.textContent = CONFIG.APP_NAME;
+        $("#appName");
+
+    appVersion =
+
+        $("#appVersion");
+
+    btnHome =
+
+        $("#btnHome");
+
+    btnRefresh =
+
+        $("#btnRefresh");
+
+    btnAbout =
+
+        $("#btnAbout");
+
+    render();
+
+    bindEvents();
+
+}
+
+/* ==========================================================
+   RENDER
+========================================================== */
+
+function render() {
+
+    if (appName) {
+
+        appName.textContent =
+
+            CONFIG.APP_NAME;
+
     }
 
-    if (homeButton) {
+    if (appVersion) {
 
-        homeButton.addEventListener("click", () => {
+        appVersion.textContent =
 
-            window.location.hash = "#/tree";
+            "v" +
 
-        });
-
-    }
-
-    if (addButton) {
-
-        addButton.addEventListener("click", () => {
-
-            window.location.hash = "#/member";
-
-        });
-
-    }
-
-    if (printButton) {
-
-        printButton.addEventListener("click", () => {
-
-            window.print();
-
-        });
+            CONFIG.VERSION;
 
     }
 
 }
 
-/**
- * Mengubah judul aplikasi
- */
-export function setTitle(title) {
+/* ==========================================================
+   EVENTS
+========================================================== */
 
-    document.title = title;
+function bindEvents() {
 
-}
+    btnHome?.addEventListener(
 
-/**
- * Mengubah nama brand di header
- */
-export function setBrand(name) {
+        "click",
 
-    const brand = document.querySelector(".brand");
+        () => {
 
-    if (!brand) return;
+            navigate("tree");
 
-    brand.textContent = name;
+        }
 
-}
+    );
 
-/**
- * Menampilkan atau menyembunyikan tombol tambah anggota
- */
-export function showAddButton(show = true) {
+    btnRefresh?.addEventListener(
 
-    const button = document.querySelector("#addButton");
+        "click",
 
-    if (!button) return;
+        refresh
 
-    button.hidden = !show;
+    );
 
-}
+    btnAbout?.addEventListener(
 
-/**
- * Menampilkan atau menyembunyikan tombol Home
- */
-export function showHomeButton(show = true) {
+        "click",
 
-    const button = document.querySelector("#homeButton");
+        about
 
-    if (!button) return;
-
-    button.hidden = !show;
+    );
 
 }
 
-/**
- * Menampilkan atau menyembunyikan tombol Print
- */
-export function showPrintButton(show = true) {
+/* ==========================================================
+   REFRESH
+========================================================== */
 
-    const button = document.querySelector(".print-button");
+function refresh() {
 
-    if (!button) return;
+    document.dispatchEvent(
 
-    button.hidden = !show;
+        new CustomEvent(
+
+            CONFIG.EVENTS.DATA_UPDATED
+
+        )
+
+    );
+
+    Toast.info(
+
+        "Memuat ulang data..."
+
+    );
 
 }
 
-/**
- * Mengaktifkan / menonaktifkan seluruh header
- */
-export function enableHeader(enable = true) {
+/* ==========================================================
+   ABOUT
+========================================================== */
 
-    document
-        .querySelectorAll("header button")
-        .forEach(button => {
+function about() {
 
-            button.disabled = !enable;
+    Toast.info(
 
-        });
+        `${
+
+            CONFIG.APP_NAME
+
+        } v${
+
+            CONFIG.VERSION
+
+        }`
+
+    );
+
+}
+
+/* ==========================================================
+   HELPERS
+========================================================== */
+
+function $(selector) {
+
+    return document.querySelector(
+
+        selector
+
+    );
 
 }
