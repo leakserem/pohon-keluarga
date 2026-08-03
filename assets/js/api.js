@@ -9,132 +9,76 @@
 import { CONFIG } from "./config.js";
 
 /* ==========================================================
-   URL
+   CONFIG
 ========================================================== */
 
 const API_URL = CONFIG.API.BASE_URL;
-
-if (!API_URL) {
-
-    throw new Error(
-
-        "CONFIG.API.BASE_URL belum diatur."
-
-    );
-
-}
 
 /* ==========================================================
    REQUEST
 ========================================================== */
 
-async function request(action = "", options = {}) {
+async function request(method = "GET", payload = null) {
 
-    const url = action
+    const options = {
 
-        ? `${API_URL}?action=${encodeURIComponent(action)}`
+        method,
 
-        : API_URL;
-
-    let retry = CONFIG.API.RETRY;
-
-    while (retry >= 0) {
-
-        try {
-
-            const response = await fetch(url, {
-
-                method: options.method || "GET",
-
-                headers: {
-
-                    "Content-Type": "application/json"
-
-                },
-
-                body: options.body
-
-                    ? JSON.stringify(options.body)
-
-                    : undefined
-
-            });
-
-            if (!response.ok) {
-
-                throw new Error(
-
-                    `HTTP ${response.status}`
-
-                );
-
-            }
-
-            return await response.json();
-
+        headers: {
+            "Content-Type": "application/json"
         }
 
-        catch (error) {
+    };
 
-            if (retry === 0) {
+    if (payload) {
 
-                throw error;
-
-            }
-
-            retry--;
-
-        }
+        options.body = JSON.stringify(payload);
 
     }
+
+    const response = await fetch(API_URL, options);
+
+    if (!response.ok) {
+
+        throw new Error(`HTTP ${response.status}`);
+
+    }
+
+    return await response.json();
 
 }
 
 /* ==========================================================
-   LOAD
+   LOAD PEOPLE
 ========================================================== */
 
 export async function loadPeople() {
 
-    const data = await request();
+    const data = await request("GET");
 
-    if (!Array.isArray(data))
+    if (!Array.isArray(data)) {
 
         return [];
 
+    }
+
     return data.map(person => ({
 
-        id:
+        id: person.id || "",
 
-            person.id ?? "",
+        fullName: person.fullName || "",
 
-        fullName:
+        generation: Number(person.generation) || 1,
 
-            person.fullName ?? "",
+        fatherId: person.fatherId || "",
 
-        generation:
+        motherId: person.motherId || "",
 
-            Number(person.generation) || 1,
+        spouseId: person.spouseId || "",
 
-        fatherId:
+        photo: person.photo || "",
 
-            person.fatherId ?? "",
-
-        motherId:
-
-            person.motherId ?? "",
-
-        spouseId:
-
-            person.spouseId ?? "",
-
-        photo:
-
-            person.photo ?? "",
-
-        notes:
-
-            person.notes ?? ""
+        notes: person.notes || ""
 
     }));
 
@@ -146,11 +90,11 @@ export async function loadPeople() {
 
 export async function createPerson(person) {
 
-    return await request("create", {
+    return await request("POST", {
 
-        method: "POST",
+        action: "create",
 
-        body: person
+        person
 
     });
 
@@ -162,11 +106,11 @@ export async function createPerson(person) {
 
 export async function updatePerson(person) {
 
-    return await request("update", {
+    return await request("POST", {
 
-        method: "POST",
+        action: "update",
 
-        body: person
+        person
 
     });
 
@@ -178,29 +122,25 @@ export async function updatePerson(person) {
 
 export async function deletePerson(id) {
 
-    return await request("delete", {
+    return await request("POST", {
 
-        method: "POST",
+        action: "delete",
 
-        body: {
-
-            id
-
-        }
+        id
 
     });
 
 }
 
 /* ==========================================================
-   HEALTH
+   PING
 ========================================================== */
 
 export async function ping() {
 
     try {
 
-        await request();
+        await request("GET");
 
         return true;
 
