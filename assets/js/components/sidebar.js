@@ -2,23 +2,41 @@
  * ==========================================================
  * Family Tree v2
  * sidebar.js
+ * Member Sidebar
  * ==========================================================
  */
 
 import {
-    Store,
-    getFilteredPeople
+
+    subscribe,
+
+    getPeople
+
 } from "../store.js";
+
+import {
+
+    emit
+
+} from "../utils/dom.js";
+
+import {
+
+    getPhoto
+
+} from "../utils/image.js";
+
+import * as Format
+
+    from "../utils/formatter.js";
 
 /* ==========================================================
    ELEMENTS
 ========================================================== */
 
-const memberList =
-    document.querySelector("#memberList");
+let sidebar = null;
 
-const memberCount =
-    document.querySelector("#memberCount");
+let list = null;
 
 /* ==========================================================
    PUBLIC
@@ -26,9 +44,37 @@ const memberCount =
 
 export function initializeSidebar() {
 
-    renderSidebar();
+    sidebar =
 
-    Store.subscribe(renderSidebar);
+        document.querySelector(
+
+            "#sidebar"
+
+        );
+
+    list =
+
+        document.querySelector(
+
+            "#memberList"
+
+        );
+
+    if (
+
+        !sidebar ||
+
+        !list
+
+    ) {
+
+        return;
+
+    }
+
+    subscribe(renderSidebar);
+
+    renderSidebar();
 
 }
 
@@ -38,97 +84,204 @@ export function initializeSidebar() {
 
 export function renderSidebar() {
 
-    if (!memberList) return;
+    if (!list)
 
-    const people = getFilteredPeople();
+        return;
 
-    memberList.innerHTML = "";
+    list.replaceChildren();
+
+    const people =
+
+        [...getPeople()]
+
+        .sort(compareName);
+
+    const fragment =
+
+        document.createDocumentFragment();
 
     people.forEach(person => {
 
-        memberList.appendChild(
+        fragment.appendChild(
 
-            createMemberItem(person)
+            createItem(person)
 
         );
 
     });
 
-    if (memberCount) {
-
-        memberCount.textContent =
-            `${people.length} Anggota`;
-
-    }
+    list.appendChild(fragment);
 
 }
 
 /* ==========================================================
-   MEMBER ITEM
+   ITEM
 ========================================================== */
 
-function createMemberItem(person) {
+function createItem(person) {
 
-    const item = document.createElement("div");
+    const item =
 
-    item.className = "sidebar-item";
+        document.createElement("button");
 
-    const avatar = person.photo
-        ? `<img src="${person.photo}" alt="${person.fullName}">`
-        : "👤";
+    item.type = "button";
 
-    item.innerHTML = `
+    item.className =
 
-        <div class="sidebar-avatar">
+        "sidebar-item";
 
-            ${avatar}
+    item.dataset.id =
 
-        </div>
+        person.id;
 
-        <div class="sidebar-info">
+    const avatar =
 
-            <strong>
+        document.createElement("img");
 
-                ${person.fullName || "-"}
+    avatar.className =
 
-            </strong>
+        "sidebar-avatar";
 
-            <small>
+    avatar.src =
 
-                ID : ${person.id}
+        getPhoto(person.photo);
 
-            </small>
+    avatar.alt =
 
-            <small>
+        person.fullName;
 
-                Generasi ${person.generation}
+    const content =
 
-            </small>
+        document.createElement("div");
 
-        </div>
+    content.className =
 
-    `;
+        "sidebar-content";
 
-    item.addEventListener("click", () => {
+    const name =
 
-        document.dispatchEvent(
+        document.createElement("div");
 
-            new CustomEvent(
+    name.className =
 
-                "member:selected",
+        "sidebar-name";
 
-                {
+    name.textContent =
 
-                    detail: person
+        Format.fullName(
 
-                }
-
-            )
+            person.fullName
 
         );
 
-    });
+    const info =
+
+        document.createElement("div");
+
+    info.className =
+
+        "sidebar-info";
+
+    info.textContent =
+
+        `${
+
+            Format.id(person.id)
+
+        } • ${
+
+            Format.generation(
+
+                person.generation
+
+            )
+
+        }`;
+
+    content.append(
+
+        name,
+
+        info
+
+    );
+
+    item.append(
+
+        avatar,
+
+        content
+
+    );
+
+    item.addEventListener(
+
+        "click",
+
+        () => {
+
+            emit(
+
+                "member:selected",
+
+                person
+
+            );
+
+            highlight(person.id);
+
+        }
+
+    );
 
     return item;
+
+}
+
+/* ==========================================================
+   HIGHLIGHT
+========================================================== */
+
+export function highlight(id) {
+
+    list
+
+        ?.querySelectorAll(
+
+            ".sidebar-item"
+
+        )
+
+        .forEach(item => {
+
+            item.classList.toggle(
+
+                "active",
+
+                item.dataset.id === id
+
+            );
+
+        });
+
+}
+
+/* ==========================================================
+   SORT
+========================================================== */
+
+function compareName(a, b) {
+
+    return (
+
+        a.fullName || ""
+
+    ).localeCompare(
+
+        b.fullName || "",
+
+        "id"
+
+    );
 
 }
