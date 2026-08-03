@@ -2,95 +2,303 @@
  * ==========================================================
  * Family Tree v2
  * dialog.js
+ * Member Dialog
  * ==========================================================
  */
 
 import {
-    addMember
+
+    createMemberId
+
+} from "../utils/uuid.js";
+
+import {
+
+    createPerson,
+
+    updatePerson,
+
+    deletePerson
+
 } from "../api.js";
 
 import {
+
+    addPerson,
+
+    updatePerson as updateStore,
+
+    removePerson
+
+} from "../store.js";
+
+import {
+
     Toast
+
 } from "./toast.js";
 
-const dialog = document.querySelector("#memberDialog");
-const title = document.querySelector("#dialogTitle");
-const body = document.querySelector("#dialogBody");
-const footer = document.querySelector("#dialogFooter");
+/* ==========================================================
+   ELEMENTS
+========================================================== */
+
+let dialog;
+
+let title;
+
+let body;
+
+let footer;
+
+let editingId = null;
 
 /* ==========================================================
    PUBLIC
 ========================================================== */
 
-export const Dialog = {
+export function initializeDialog() {
 
-    initialize,
+    dialog =
 
-    openAddMember,
+        document.querySelector("#memberDialog");
 
-    close
+    title =
 
-};
+        document.querySelector("#dialogTitle");
 
-/* ==========================================================
-   INIT
-========================================================== */
+    body =
 
-export function initialize() {
+        document.querySelector("#dialogBody");
 
-    dialog?.addEventListener("click", event => {
+    footer =
 
-        if (event.target.hasAttribute("data-close")) {
-
-            close();
-
-        }
-
-    });
+        document.querySelector("#dialogFooter");
 
 }
 
 /* ==========================================================
-   OPEN
+   ADD
 ========================================================== */
 
 export function openAddMember() {
 
-    if (!dialog) return;
+    editingId = null;
 
-    title.textContent = "Tambah Anggota";
+    title.textContent =
 
-    body.innerHTML = createMemberForm();
+        "Tambah Anggota";
 
-    footer.innerHTML = `
+    body.innerHTML = createForm({
 
-        <button
-            id="btnCancelMember"
-            class="btn">
+        id: createMemberId(),
 
-            Batal
+        fullName: "",
 
-        </button>
+        generation: 1,
 
-        <button
-            id="btnSaveMember"
-            class="btn btn-primary">
+        fatherId: "",
 
-            Simpan
+        motherId: "",
 
-        </button>
+        spouseId: "",
 
-    `;
+        photo: "",
 
-    document
-        .querySelector("#btnCancelMember")
-        .addEventListener("click", close);
+        notes: ""
 
-    document
-        .querySelector("#btnSaveMember")
-        .addEventListener("click", saveMember);
+    });
+
+    footer.innerHTML =
+
+        buttons(false);
+
+    bindButtons();
 
     dialog.showModal();
+
+}
+
+/* ==========================================================
+   EDIT
+========================================================== */
+
+export function openEditMember(person) {
+
+    editingId = person.id;
+
+    title.textContent =
+
+        "Ubah Anggota";
+
+    body.innerHTML =
+
+        createForm(person);
+
+    footer.innerHTML =
+
+        buttons(true);
+
+    bindButtons();
+
+    dialog.showModal();
+
+}
+
+/* ==========================================================
+   BUTTONS
+========================================================== */
+
+function bindButtons() {
+
+    $("#btnCancel")
+
+        ?.addEventListener(
+
+            "click",
+
+            close
+
+        );
+
+    $("#btnSave")
+
+        ?.addEventListener(
+
+            "click",
+
+            save
+
+        );
+
+    $("#btnDelete")
+
+        ?.addEventListener(
+
+            "click",
+
+            remove
+
+        );
+
+}
+
+/* ==========================================================
+   SAVE
+========================================================== */
+
+async function save() {
+
+    const person = collect();
+
+    try {
+
+        if (editingId) {
+
+            await updatePerson(person);
+
+            updateStore(
+
+                person.id,
+
+                person
+
+            );
+
+            Toast.success(
+
+                "Data diperbarui."
+
+            );
+
+        }
+
+        else {
+
+            await createPerson(person);
+
+            addPerson(person);
+
+            Toast.success(
+
+                "Anggota ditambahkan."
+
+            );
+
+        }
+
+        close();
+
+    }
+
+    catch {
+
+        Toast.error(
+
+            "Gagal menyimpan data."
+
+        );
+
+    }
+
+}
+
+/* ==========================================================
+   DELETE
+========================================================== */
+
+async function remove() {
+
+    if (!editingId)
+
+        return;
+
+    if (
+
+        !confirm(
+
+            "Hapus anggota ini?"
+
+        )
+
+    ) {
+
+        return;
+
+    }
+
+    try {
+
+        await deletePerson(
+
+            editingId
+
+        );
+
+        removePerson(
+
+            editingId
+
+        );
+
+        Toast.success(
+
+            "Anggota dihapus."
+
+        );
+
+        close();
+
+    }
+
+    catch {
+
+        Toast.error(
+
+            "Gagal menghapus."
+
+        );
+
+    }
 
 }
 
@@ -105,80 +313,50 @@ export function close() {
 }
 
 /* ==========================================================
-   SAVE
+   DATA
 ========================================================== */
 
-async function saveMember() {
+function collect() {
 
-    const data = {
+    return {
 
         id:
-            document.querySelector("#memberId").value.trim(),
+
+            $("#memberId").value,
 
         fullName:
-            document.querySelector("#memberName").value.trim(),
+
+            $("#memberName").value.trim(),
 
         generation:
+
             Number(
-                document.querySelector("#memberGeneration").value
-            ) || 1,
+
+                $("#memberGeneration").value
+
+            ),
 
         fatherId:
-            document.querySelector("#memberFather").value.trim(),
+
+            $("#memberFather").value.trim(),
 
         motherId:
-            document.querySelector("#memberMother").value.trim(),
+
+            $("#memberMother").value.trim(),
 
         spouseId:
-            document.querySelector("#memberSpouse").value.trim(),
+
+            $("#memberSpouse").value.trim(),
 
         photo:
-            document.querySelector("#memberPhoto").value.trim(),
+
+            $("#memberPhoto").value.trim(),
 
         notes:
-            document.querySelector("#memberNotes").value.trim()
+
+            $("#memberNotes").value.trim()
 
     };
-
-    if (!data.id) {
-
-        Toast.error("ID wajib diisi.");
-
-        return;
-
-    }
-
-    if (!data.fullName) {
-
-        Toast.error("Nama wajib diisi.");
-
-        return;
-
-    }
-
-    try {
-
-        await addMember(data);
-
-        Toast.success("Anggota berhasil ditambahkan.");
-
-        close();
-
-        document.dispatchEvent(
-
-            new CustomEvent("data:updated")
-
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        Toast.error("Gagal menyimpan data.");
-
-    }
 
 }
 
@@ -186,98 +364,89 @@ async function saveMember() {
    FORM
 ========================================================== */
 
-function createMemberForm() {
+function createForm(person) {
 
     return `
 
-<div class="form-grid">
+<input id="memberId"
+value="${person.id}"
+readonly>
 
-<label>
+<input id="memberName"
+value="${person.fullName}">
 
-ID
-
-<input
-id="memberId"
-type="text"
-placeholder="K-0001">
-
-</label>
-
-<label>
-
-Nama Lengkap
-
-<input
-id="memberName"
-type="text">
-
-</label>
-
-<label>
-
-Generasi
-
-<input
-id="memberGeneration"
+<input id="memberGeneration"
 type="number"
-min="1"
-value="1">
+value="${person.generation}">
 
-</label>
+<input id="memberFather"
+value="${person.fatherId}">
 
-<label>
+<input id="memberMother"
+value="${person.motherId}">
 
-ID Ayah
+<input id="memberSpouse"
+value="${person.spouseId}">
 
-<input
-id="memberFather"
-type="text">
+<input id="memberPhoto"
+value="${person.photo}">
 
-</label>
-
-<label>
-
-ID Ibu
-
-<input
-id="memberMother"
-type="text">
-
-</label>
-
-<label>
-
-ID Pasangan
-
-<input
-id="memberSpouse"
-type="text">
-
-</label>
-
-<label>
-
-Foto
-
-<input
-id="memberPhoto"
-type="text"
-placeholder="uploads/photos/K-0001.jpg">
-
-</label>
-
-<label>
-
-Catatan
-
-<textarea
-id="memberNotes"
-rows="4"></textarea>
-
-</label>
-
-</div>
+<textarea id="memberNotes">${person.notes}</textarea>
 
 `;
+
+}
+
+/* ==========================================================
+   BUTTON HTML
+========================================================== */
+
+function buttons(edit) {
+
+    return `
+
+<button
+id="btnCancel"
+class="btn">
+
+Batal
+
+</button>
+
+${
+edit
+?
+`
+<button
+id="btnDelete"
+class="btn btn-danger">
+
+Hapus
+
+</button>
+`
+:
+""
+}
+
+<button
+id="btnSave"
+class="btn btn-primary">
+
+Simpan
+
+</button>
+
+`;
+
+}
+
+/* ==========================================================
+   HELPER
+========================================================== */
+
+function $(selector) {
+
+    return document.querySelector(selector);
 
 }
