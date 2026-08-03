@@ -22,11 +22,7 @@ async function request(method = "GET", payload = null) {
 
     const options = {
 
-        method,
-
-        headers: {
-            "Content-Type": "application/json"
-        }
+        method
 
     };
 
