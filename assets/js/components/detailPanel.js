@@ -2,10 +2,41 @@
  * ==========================================================
  * Family Tree v2
  * detailPanel.js
+ * Member Detail Panel
  * ==========================================================
  */
 
-const panel = document.querySelector("#detailContent");
+import {
+
+    getPhoto
+
+} from "../utils/image.js";
+
+import * as Format
+
+    from "../utils/formatter.js";
+
+/* ==========================================================
+   ELEMENTS
+========================================================== */
+
+let panel = null;
+
+let avatar = null;
+
+let name = null;
+
+let id = null;
+
+let generation = null;
+
+let father = null;
+
+let mother = null;
+
+let spouse = null;
+
+let notes = null;
 
 /* ==========================================================
    PUBLIC
@@ -13,13 +44,89 @@ const panel = document.querySelector("#detailContent");
 
 export function initializeDetailPanel() {
 
+    panel =
+
+        document.querySelector(
+
+            "#detailPanel"
+
+        );
+
+    avatar =
+
+        document.querySelector(
+
+            "#detailPhoto"
+
+        );
+
+    name =
+
+        document.querySelector(
+
+            "#detailName"
+
+        );
+
+    id =
+
+        document.querySelector(
+
+            "#detailId"
+
+        );
+
+    generation =
+
+        document.querySelector(
+
+            "#detailGeneration"
+
+        );
+
+    father =
+
+        document.querySelector(
+
+            "#detailFather"
+
+        );
+
+    mother =
+
+        document.querySelector(
+
+            "#detailMother"
+
+        );
+
+    spouse =
+
+        document.querySelector(
+
+            "#detailSpouse"
+
+        );
+
+    notes =
+
+        document.querySelector(
+
+            "#detailNotes"
+
+        );
+
     document.addEventListener(
 
         "member:selected",
 
         event => {
 
-            renderDetail(event.detail);
+            showMember(
+
+                event.detail
+
+            );
 
         }
 
@@ -28,88 +135,82 @@ export function initializeDetailPanel() {
 }
 
 /* ==========================================================
-   RENDER
+   SHOW
 ========================================================== */
 
-export function renderDetail(person) {
+export function showMember(person) {
 
-    if (!panel || !person) return;
+    if (!person)
 
-    const photo = person.photo
-        ? `<img src="${person.photo}" alt="${person.fullName}">`
-        : `<div class="detail-avatar-placeholder">👤</div>`;
+        return;
 
-    panel.innerHTML = `
+    avatar.src =
 
-        <div class="detail-card">
+        getPhoto(
 
-            <div class="detail-photo">
+            person.photo
 
-                ${photo}
+        );
 
-            </div>
+    avatar.alt =
 
-            <h2>
+        person.fullName;
 
-                ${person.fullName || "-"}
+    name.textContent =
 
-            </h2>
+        Format.fullName(
 
-            <table class="detail-table">
+            person.fullName
 
-                <tr>
+        );
 
-                    <th>ID</th>
+    id.textContent =
 
-                    <td>${person.id || "-"}</td>
+        Format.id(
 
-                </tr>
+            person.id
 
-                <tr>
+        );
 
-                    <th>Generasi</th>
+    generation.textContent =
 
-                    <td>${person.generation || "-"}</td>
+        Format.generation(
 
-                </tr>
+            person.generation
 
-                <tr>
+        );
 
-                    <th>Ayah</th>
+    father.textContent =
 
-                    <td>${person.fatherId || "-"}</td>
+        Format.id(
 
-                </tr>
+            person.fatherId
 
-                <tr>
+        );
 
-                    <th>Ibu</th>
+    mother.textContent =
 
-                    <td>${person.motherId || "-"}</td>
+        Format.id(
 
-                </tr>
+            person.motherId
 
-                <tr>
+        );
 
-                    <th>Pasangan</th>
+    spouse.textContent =
 
-                    <td>${person.spouseId || "-"}</td>
+        Format.id(
 
-                </tr>
+            person.spouseId
 
-                <tr>
+        );
 
-                    <th>Catatan</th>
+    notes.textContent =
 
-                    <td>${person.notes || "-"}</td>
+        Format.notes(
 
-                </tr>
+            person.notes
 
-            </table>
-
-        </div>
-
-    `;
+        );
 
 }
 
@@ -119,20 +220,24 @@ export function renderDetail(person) {
 
 export function clearDetailPanel() {
 
-    if (!panel) return;
+    avatar.src =
 
-    panel.innerHTML = `
+        getPhoto("");
 
-        <div class="detail-empty">
+    avatar.alt = "";
 
-            <p>
+    name.textContent = "-";
 
-                Pilih anggota keluarga untuk melihat detail.
+    id.textContent = "-";
 
-            </p>
+    generation.textContent = "-";
 
-        </div>
+    father.textContent = "-";
 
-    `;
+    mother.textContent = "-";
+
+    spouse.textContent = "-";
+
+    notes.textContent = "-";
 
 }
