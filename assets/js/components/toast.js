@@ -2,178 +2,214 @@
  * ==========================================================
  * Family Tree v2
  * toast.js
- * Global Toast Notification
+ * Toast Notification
  * ==========================================================
  */
 
-class ToastManager {
+const CLASS = {
 
-    constructor() {
+    success: "toast-success",
 
-        this.container = document.querySelector("#toastContainer");
+    error: "toast-error",
 
-        if (!this.container) {
+    warning: "toast-warning",
 
-            this.container = document.createElement("div");
+    info: "toast-info"
 
-            this.container.id = "toastContainer";
+};
 
-            this.container.className = "toast-container";
+let container = null;
 
-            document.body.appendChild(this.container);
+/* ==========================================================
+   PUBLIC
+========================================================== */
 
-        }
-
-    }
-
-    /* ==========================================
-       PUBLIC
-    ========================================== */
+export const Toast = {
 
     success(message, duration = 3000) {
 
-        this.show("success", message, duration);
+        show(message, CLASS.success, duration);
 
-    }
+    },
 
-    error(message, duration = 5000) {
+    error(message, duration = 4000) {
 
-        this.show("error", message, duration);
+        show(message, CLASS.error, duration);
 
-    }
+    },
 
-    warning(message, duration = 4000) {
+    warning(message, duration = 3500) {
 
-        this.show("warning", message, duration);
+        show(message, CLASS.warning, duration);
 
-    }
+    },
 
     info(message, duration = 3000) {
 
-        this.show("info", message, duration);
+        show(message, CLASS.info, duration);
 
     }
 
-    /* ==========================================
-       CREATE
-    ========================================== */
+};
 
-    show(type, message, duration) {
+/* ==========================================================
+   SHOW
+========================================================== */
 
-        const toast = document.createElement("div");
+function show(
 
-        toast.className = `toast toast-${type}`;
+    message,
 
-        toast.innerHTML = `
+    type,
 
-            <div class="toast-icon">
+    duration
 
-                ${this.icon(type)}
+) {
 
-            </div>
+    ensureContainer();
 
-            <div class="toast-content">
+    const toast = createToast(
 
-                <div class="toast-message">
+        message,
 
-                    ${this.escape(message)}
+        type
 
-                </div>
+    );
 
-                <div class="toast-progress"></div>
+    container.appendChild(toast);
 
-            </div>
+    requestAnimationFrame(() => {
 
-            <button class="toast-close">
+        toast.classList.add(
 
-                ×
+            "show"
 
-            </button>
+        );
 
-        `;
+    });
 
-        this.container.appendChild(toast);
+    const timer = setTimeout(() => {
 
-        const progress = toast.querySelector(".toast-progress");
+        removeToast(toast);
 
-        progress.style.animationDuration = duration + "ms";
+    }, duration);
 
-        toast.querySelector(".toast-close")
+    toast.addEventListener(
 
-            .addEventListener("click", () => {
+        "click",
 
-                this.remove(toast);
+        () => {
 
-            });
+            clearTimeout(timer);
 
-        setTimeout(() => {
-
-            this.remove(toast);
-
-        }, duration);
-
-    }
-
-    /* ==========================================
-       REMOVE
-    ========================================== */
-
-    remove(toast) {
-
-        if (!toast) return;
-
-        toast.classList.add("toast-hide");
-
-        setTimeout(() => {
-
-            toast.remove();
-
-        }, 250);
-
-    }
-
-    /* ==========================================
-       ICON
-    ========================================== */
-
-    icon(type) {
-
-        switch (type) {
-
-            case "success":
-
-                return "✅";
-
-            case "error":
-
-                return "❌";
-
-            case "warning":
-
-                return "⚠️";
-
-            default:
-
-                return "ℹ️";
+            removeToast(toast);
 
         }
 
-    }
-
-    /* ==========================================
-       ESCAPE
-    ========================================== */
-
-    escape(text = "") {
-
-        const div = document.createElement("div");
-
-        div.textContent = text;
-
-        return div.innerHTML;
-
-    }
+    );
 
 }
 
-export const Toast = new ToastManager();
+/* ==========================================================
+   CREATE
+========================================================== */
+
+function createToast(
+
+    message,
+
+    type
+
+) {
+
+    const toast =
+
+        document.createElement("div");
+
+    toast.className =
+
+        `toast ${type}`;
+
+    toast.textContent =
+
+        message;
+
+    return toast;
+
+}
+
+/* ==========================================================
+   REMOVE
+========================================================== */
+
+function removeToast(toast) {
+
+    toast.classList.remove(
+
+        "show"
+
+    );
+
+    toast.classList.add(
+
+        "hide"
+
+    );
+
+    toast.addEventListener(
+
+        "transitionend",
+
+        () => {
+
+            toast.remove();
+
+        },
+
+        {
+
+            once: true
+
+        }
+
+    );
+
+}
+
+/* ==========================================================
+   CONTAINER
+========================================================== */
+
+function ensureContainer() {
+
+    if (container)
+
+        return;
+
+    container =
+
+        document.querySelector(
+
+            "#toastContainer"
+
+        );
+
+    if (container)
+
+        return;
+
+    container =
+
+        document.createElement("div");
+
+    container.id =
+
+        "toastContainer";
+
+    document.body.appendChild(
+
+        container
+
+    );
+
+}
