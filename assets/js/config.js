@@ -26,14 +26,9 @@ export const CONFIG = Object.freeze({
        API
     ====================================================== */
 
-    API: {
+const API_URL = CONFIG.API.BASE_URL;
 
-    BASE_URL:
-        "https://script.google.com/macros/s/AKfycbxLbpfHBOrcmWL5jxMAruHZKqXt3chmdsu8CW1JeBdKFirylw-H8EXIjEVPJpiGBP1x/exec",
-
-    TIMEOUT: 10000,
-
-    RETRY: 2
+console.log("API_URL =", API_URL);
 
 },
     /* ======================================================
