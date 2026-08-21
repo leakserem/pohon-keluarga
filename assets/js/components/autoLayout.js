@@ -1,201 +1,133 @@
 /**
- * ==========================================================
- * Family Tree v2
- * autoLayout.js
- * Automatic Tree Layout
- * ==========================================================
+ * Family Tree v2 - Couple-aware automatic layout
  */
 
 import { buildTree } from "./treeBuilder.js";
-
-import {
-
-    TREE
-
-} from "../utils/constants.js";
-
-/* ==========================================================
-   PUBLIC
-========================================================== */
+import { TREE } from "../utils/constants.js";
 
 export function buildFamilyLayout() {
-
     const tree = buildTree();
-
     let startX = TREE.ROOT_OFFSET_X;
 
-    tree.forEach(root => {
-
+    for (const root of tree) {
         layout(root, startX, TREE.ROOT_OFFSET_Y);
-
         startX += root.width + TREE.HORIZONTAL_GAP;
-
-    });
+    }
 
     return tree;
-
 }
 
-/* ==========================================================
-   LAYOUT
-========================================================== */
+function coupleWidth(node) {
+    return node.spouse
+        ? TREE.NODE_WIDTH * 2 + TREE.SPOUSE_GAP
+        : TREE.NODE_WIDTH;
+}
 
 function layout(node, x, y) {
-
+    const ownWidth = coupleWidth(node);
     node.y = y;
 
     if (node.children.length === 0) {
-
-        node.width = TREE.NODE_WIDTH;
-
+        node.width = ownWidth;
         node.height = TREE.NODE_HEIGHT;
-
         node.x = x;
-
+        node.person.x = x;
+        node.person.y = y;
+        if (node.spouse) {
+            node.spouse.x = x + TREE.NODE_WIDTH + TREE.SPOUSE_GAP;
+            node.spouse.y = y;
+        }
         return;
-
     }
 
     let childX = x;
+    for (const child of node.children) {
+        layout(child, childX, y + TREE.NODE_HEIGHT + TREE.VERTICAL_GAP);
+        childX += child.width + TREE.HORIZONTAL_GAP;
+    }
 
-    node.children.forEach(child => {
-
-        layout(
-
-            child,
-
-            childX,
-
-            y +
-
-            TREE.VERTICAL_GAP
-
-        );
-
-        childX +=
-
-            child.width +
-
-            TREE.HORIZONTAL_GAP;
-
-    });
-
-    node.width = Math.max(
-
+    const childrenWidth = Math.max(
         TREE.NODE_WIDTH,
-
-        childX -
-
-        x -
-
-        TREE.HORIZONTAL_GAP
-
+        childX - x - TREE.HORIZONTAL_GAP
     );
 
-    node.height =
+    node.width = Math.max(ownWidth, childrenWidth);
+    node.height = TREE.NODE_HEIGHT + TREE.VERTICAL_GAP +
+        Math.max(...node.children.map(child => child.height), TREE.NODE_HEIGHT);
 
-        TREE.NODE_HEIGHT +
+    const ownStart = x + Math.max(0, (node.width - ownWidth) / 2);
+    const childrenStart = x + Math.max(0, (node.width - childrenWidth) / 2);
 
-        TREE.VERTICAL_GAP;
+    node.x = x;
+    node.person.x = ownStart;
+    node.person.y = y;
 
-    node.x =
+    if (node.spouse) {
+        node.spouse.x = ownStart + TREE.NODE_WIDTH + TREE.SPOUSE_GAP;
+        node.spouse.y = y;
+    }
 
-        x +
-
-        (
-
-            node.width -
-
-            TREE.NODE_WIDTH
-
-        ) / 2;
-
+    // Shift child subtree as a group toward the center of this couple.
+    if (childrenStart !== x) {
+        const delta = childrenStart - x;
+        for (const child of node.children) shiftTree(child, delta);
+    }
 }
 
-/* ==========================================================
-   FLATTEN
-========================================================== */
+function shiftTree(node, delta) {
+    node.x += delta;
+    node.person.x += delta;
+    if (node.spouse) node.spouse.x += delta;
+    for (const child of node.children) shiftTree(child, delta);
+}
 
 export function flattenLayout(tree) {
-
     const result = [];
+    const seen = new Set();
 
-    tree.forEach(root =>
-
-        walk(root)
-
-    );
-
-    return result;
+    function pushPerson(person, metadata = {}) {
+        if (!person?.id || seen.has(person.id)) return;
+        seen.add(person.id);
+        result.push({
+            ...person,
+            ...metadata
+        });
+    }
 
     function walk(node) {
-
-        result.push({
-
-            ...node.person,
-
-            spouse: node.spouse,
-
-            x: node.x,
-
-            y: node.y
-
+        pushPerson(node.person, {
+            x: node.person.x,
+            y: node.person.y,
+            role: "primary",
+            spouseId: node.spouse?.id ?? ""
         });
 
-        node.children.forEach(walk);
+        if (node.spouse) {
+            pushPerson(node.spouse, {
+                x: node.spouse.x,
+                y: node.spouse.y,
+                role: "spouse",
+                spouseId: node.person.id
+            });
+        }
 
+        node.children.forEach(walk);
     }
 
+    tree.forEach(walk);
+    return result;
 }
 
-/* ==========================================================
-   SIZE
-========================================================== */
-
 export function getLayoutSize(tree) {
-
     let width = 0;
-
     let height = 0;
 
-    tree.forEach(root => {
-
-        walk(root);
-
-    });
-
-    return {
-
-        width,
-
-        height
-
-    };
-
     function walk(node) {
-
-        width = Math.max(
-
-            width,
-
-            node.x +
-
-            TREE.NODE_WIDTH
-
-        );
-
-        height = Math.max(
-
-            height,
-
-            node.y +
-
-            TREE.NODE_HEIGHT
-
-        );
-
+        width = Math.max(width, node.x + node.width);
+        height = Math.max(height, node.y + node.height);
         node.children.forEach(walk);
-
     }
 
+    tree.forEach(walk);
+    return { width, height };
 }

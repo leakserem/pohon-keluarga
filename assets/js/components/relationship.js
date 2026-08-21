@@ -1,265 +1,108 @@
 /**
- * ==========================================================
- * Family Tree v2
- * relationship.js
- * Family Relationship Engine
- * ==========================================================
+ * Family Tree v2 - Relationship engine with cycle protection
  */
 
-import {
-
-    getPeople,
-
-    getPerson
-
-} from "../store.js";
-
-/* ==========================================================
-   PARENTS
-========================================================== */
+import { getPeople, getPerson } from "../store.js";
 
 export function getParents(personId) {
-
     const person = getPerson(personId);
+    if (!person) return [];
 
-    if (!person)
-
-        return [];
-
-    const parents = [];
-
+    const result = [];
     if (person.fatherId) {
-
         const father = getPerson(person.fatherId);
-
-        if (father)
-
-            parents.push(father);
-
+        if (father) result.push(father);
     }
-
     if (person.motherId) {
-
         const mother = getPerson(person.motherId);
-
-        if (mother)
-
-            parents.push(mother);
-
+        if (mother) result.push(mother);
     }
-
-    return parents;
-
+    return result;
 }
-
-/* ==========================================================
-   FATHER
-========================================================== */
 
 export function getFather(personId) {
-
     const person = getPerson(personId);
-
-    if (!person?.fatherId)
-
-        return null;
-
-    return getPerson(person.fatherId);
-
+    return person?.fatherId ? getPerson(person.fatherId) : null;
 }
-
-/* ==========================================================
-   MOTHER
-========================================================== */
 
 export function getMother(personId) {
-
     const person = getPerson(personId);
-
-    if (!person?.motherId)
-
-        return null;
-
-    return getPerson(person.motherId);
-
+    return person?.motherId ? getPerson(person.motherId) : null;
 }
-
-/* ==========================================================
-   SPOUSE
-========================================================== */
 
 export function getSpouse(personId) {
-
     const person = getPerson(personId);
-
-    if (!person?.spouseId)
-
-        return null;
-
-    return getPerson(person.spouseId);
-
+    if (!person?.spouseId) return null;
+    const spouse = getPerson(person.spouseId);
+    if (!spouse) return null;
+    return !spouse.spouseId || spouse.spouseId === person.id ? spouse : null;
 }
-
-/* ==========================================================
-   CHILDREN
-========================================================== */
 
 export function getChildren(personId) {
-
-    return getPeople().filter(person =>
-
-        person.fatherId === personId ||
-
-        person.motherId === personId
-
-    );
-
+    const key = String(personId ?? "");
+    return getPeople().filter(person => person.fatherId === key || person.motherId === key);
 }
-
-/* ==========================================================
-   SIBLINGS
-========================================================== */
 
 export function getSiblings(personId) {
-
     const person = getPerson(personId);
+    if (!person) return [];
 
-    if (!person)
-
-        return [];
-
-    return getPeople()
-
-        .filter(other => {
-
-            if (other.id === person.id)
-
-                return false;
-
-            return (
-
-                other.fatherId === person.fatherId &&
-
-                other.motherId === person.motherId &&
-
-                person.fatherId !== "" &&
-
-                person.motherId !== ""
-
-            );
-
-        });
-
+    return getPeople().filter(other => {
+        if (other.id === person.id) return false;
+        const sameFather = person.fatherId && other.fatherId === person.fatherId;
+        const sameMother = person.motherId && other.motherId === person.motherId;
+        return Boolean(sameFather || sameMother);
+    });
 }
-
-/* ==========================================================
-   ROOT PEOPLE
-========================================================== */
 
 export function getRootPeople() {
-
-    return getPeople().filter(person =>
-
-        !person.fatherId &&
-
-        !person.motherId
-
-    );
-
+    return getPeople().filter(person => {
+        if (person.fatherId || person.motherId) return false;
+        if (!person.spouseId) return true;
+        const spouse = getPerson(person.spouseId);
+        return !spouse || person.id.localeCompare(spouse.id) < 0;
+    });
 }
-
-/* ==========================================================
-   GENERATION
-========================================================== */
 
 export function getGeneration(level) {
-
-    return getPeople().filter(person =>
-
-        Number(person.generation) ===
-
-        Number(level)
-
-    );
-
+    return getPeople().filter(person => Number(person.generation) === Number(level));
 }
-
-/* ==========================================================
-   DESCENDANTS
-========================================================== */
 
 export function getDescendants(personId) {
-
     const result = [];
+    const visited = new Set();
 
     function walk(id) {
+        const key = String(id ?? "");
+        if (!key || visited.has(key)) return;
+        visited.add(key);
 
-        const children = getChildren(id);
-
-        children.forEach(child => {
-
+        for (const child of getChildren(key)) {
+            if (visited.has(child.id)) continue;
             result.push(child);
-
             walk(child.id);
-
-        });
-
+        }
     }
 
     walk(personId);
-
     return result;
-
 }
 
-/* ==========================================================
-   ANCESTORS
-========================================================== */
-
 export function getAncestors(personId) {
-
     const result = [];
+    const visited = new Set();
 
-    function walk(id) {
+    function visit(person) {
+        if (!person || visited.has(person.id)) return;
+        visited.add(person.id);
 
-        const person = getPerson(id);
-
-        if (!person)
-
-            return;
-
-        if (person.fatherId) {
-
-            const father = getPerson(person.fatherId);
-
-            if (father) {
-
-                result.push(father);
-
-                walk(father.id);
-
-            }
-
+        for (const parent of getParents(person.id)) {
+            if (visited.has(parent.id)) continue;
+            result.push(parent);
+            visit(parent);
         }
-
-        if (person.motherId) {
-
-            const mother = getPerson(person.motherId);
-
-            if (mother) {
-
-                result.push(mother);
-
-                walk(mother.id);
-
-            }
-
-        }
-
     }
 
-    walk(personId);
-
+    visit(getPerson(personId));
     return result;
-
 }
