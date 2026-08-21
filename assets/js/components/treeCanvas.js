@@ -37,6 +37,28 @@ export function initializeTreeCanvas() {
         return;
     }
 
+    injectCanvasStyles();
+
+    // Keep SVG and nodes in the same coordinate system.
+    // SVG must live inside the transformed canvas, otherwise lines drift.
+    if (svgLayer.parentElement !== canvas) {
+        canvas.insertBefore(svgLayer, nodesLayer);
+    }
+
+    svgLayer.style.position = "absolute";
+    svgLayer.style.left = "0";
+    svgLayer.style.top = "0";
+    svgLayer.style.width = "100%";
+    svgLayer.style.height = "100%";
+    svgLayer.style.pointerEvents = "none";
+    svgLayer.style.zIndex = "1";
+
+    nodesLayer.style.position = "relative";
+    nodesLayer.style.zIndex = "2";
+
+    canvas.style.transformOrigin = "0 0";
+    canvas.style.position = "relative";
+
     initialized = true;
     subscribe(renderTree);
     document.addEventListener("tree:toggle-descendants", onToggleDescendants);
@@ -149,11 +171,8 @@ function updateTransform() {
     if (frameRequest !== null) cancelAnimationFrame(frameRequest);
 
     frameRequest = requestAnimationFrame(() => {
-        const transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
         canvas.style.transformOrigin = "0 0";
-        canvas.style.transform = transform;
-        svgLayer.style.transformOrigin = "0 0";
-        svgLayer.style.transform = transform;
+        canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
         frameRequest = null;
     });
 }
@@ -209,6 +228,36 @@ function onToggleDescendants(event) {
     // Toggle the collapse state and rebuild the geometry so the tree can shrink.
     toggleCollapsed(personId);
     renderTree();
+}
+
+function injectCanvasStyles() {
+    const styleId = "family-tree-canvas-v24";
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+        #treeViewport {
+            position: relative;
+        }
+
+        #treeCanvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform-origin: 0 0;
+        }
+
+        #treeSvg {
+            display: block;
+            overflow: visible;
+        }
+
+        #treeNodes {
+            position: relative;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 export function destroyTree() {

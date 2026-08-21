@@ -1,5 +1,5 @@
 /**
- * Family Tree v2 - Tree model with cycle protection
+ * Family Tree v2.4 - Tree model with cycle and descendant-collapse protection
  */
 
 import { getPeople } from "../store.js";
@@ -7,7 +7,29 @@ import { getChildren, getRootPeople, getSpouse } from "./relationship.js";
 import { isCollapsed } from "./treeCollapse.js";
 
 export function buildTree() {
-    return getRootPeople().map(root => buildBranch(root, new Set()));
+    const roots = getRootPeople();
+    const rootIds = new Set(roots.map(person => String(person.id)));
+    const emittedCouples = new Set();
+    const result = [];
+
+    for (const root of roots) {
+        const spouseId = String(root.spouseId ?? "");
+
+        if (spouseId && rootIds.has(spouseId)) {
+            const ids = [String(root.id), spouseId].sort();
+            const coupleKey = ids.join("::");
+            if (emittedCouples.has(coupleKey)) continue;
+            emittedCouples.add(coupleKey);
+
+            // Render one representative root for a root-level couple.
+            const canonicalId = ids[0];
+            if (String(root.id) !== canonicalId) continue;
+        }
+
+        result.push(buildBranch(root, new Set()));
+    }
+
+    return result;
 }
 
 function buildBranch(person, ancestors) {
@@ -15,13 +37,30 @@ function buildBranch(person, ancestors) {
     path.add(person.id);
 
     const spouse = getSpouse(person.id);
-    const children = [];
+    const coupleCollapsed =
+        isCollapsed(person.id) ||
+        Boolean(spouse?.id && isCollapsed(spouse.id));
 
-    if (isCollapsed(person.id)) {
-        return { person, spouse, children, collapsed: true };
+    if (coupleCollapsed) {
+        return {
+            person,
+            spouse,
+            children: [],
+            collapsed: true
+        };
     }
 
-    for (const child of getChildren(person.id)) {
+    const childrenById = new Map();
+    const parentIds = [person.id, spouse?.id].filter(Boolean);
+
+    for (const parentId of parentIds) {
+        for (const child of getChildren(parentId)) {
+            childrenById.set(String(child.id), child);
+        }
+    }
+
+    const children = [];
+    for (const child of childrenById.values()) {
         if (path.has(child.id)) {
             console.warn("Family relationship cycle prevented:", person.id, "->", child.id);
             continue;
@@ -29,9 +68,12 @@ function buildBranch(person, ancestors) {
         children.push(buildBranch(child, path));
     }
 
-    // If both parents exist, only the parent branch selected by root traversal owns the child.
-    // De-duplication is handled later by layout/visited IDs.
-    return { person, spouse, children };
+    return {
+        person,
+        spouse,
+        children,
+        collapsed: false
+    };
 }
 
 export function flattenTree(tree) {

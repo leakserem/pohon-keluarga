@@ -1,13 +1,14 @@
 /**
- * Family Tree v2.3 - Tree node
+ * Family Tree v2.4 - Tree node
  */
 
 import { create, text, emit } from "../utils/dom.js";
 import { formatDate } from "../utils/date.js";
 import * as Format from "../utils/formatter.js";
 import { getPhoto } from "../utils/image.js";
+import { isCollapsed } from "./treeCollapse.js";
 
-const STYLE_ID = "family-tree-descendant-button-style";
+const STYLE_ID = "family-tree-node-controls-v24";
 
 export function createTreeNode(person) {
     injectStyles();
@@ -31,28 +32,31 @@ export function createTreeNode(person) {
     avatar.appendChild(image);
 
     const title = create("div", "node-title");
-    const nameRow = create("div", "node-name-row");
     const h3 = create("h3");
     text(h3, Format.fullName(person.fullName));
-    nameRow.appendChild(h3);
 
+    const actions = create("div", "node-actions");
     const descendantButton = create("button", "descendant-toggle");
     descendantButton.type = "button";
     descendantButton.dataset.descendantId = person.id;
-    descendantButton.textContent = "Keturunan";
-    descendantButton.title = "Buka/tutup keturunan";
-    descendantButton.setAttribute("aria-label", `Buka atau tutup keturunan ${Format.fullName(person.fullName)}`);
+
+    const collapsed = isCollapsed(person.id) || isCollapsed(person.spouseId);
+    descendantButton.dataset.collapsed = String(collapsed);
+    descendantButton.setAttribute("aria-expanded", String(!collapsed));
+    descendantButton.textContent = collapsed ? "Keturunan ▶" : "Keturunan ▼";
+    descendantButton.title = collapsed ? "Buka keturunan" : "Tutup keturunan";
+    descendantButton.setAttribute(
+        "aria-label",
+        `${collapsed ? "Buka" : "Tutup"} keturunan ${Format.fullName(person.fullName)}`
+    );
     descendantButton.addEventListener("click", event => {
         event.preventDefault();
         event.stopPropagation();
         emit("tree:toggle-descendants", { personId: person.id });
     });
 
-    nameRow.appendChild(descendantButton);
-
-    const generation = create("small");
-    text(generation, Format.generation(person.generation));
-    title.append(nameRow, generation);
+    actions.appendChild(descendantButton);
+    title.append(h3, actions);
     header.append(avatar, title);
 
     const body = create("div", "node-body");
@@ -87,41 +91,56 @@ function injectStyles() {
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
-        .node-name-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
+        .tree-node .node-title {
             min-width: 0;
         }
 
-        .node-name-row h3 {
-            min-width: 0;
+        .tree-node .node-title h3 {
             margin: 0;
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .descendant-toggle {
-            flex: 0 0 auto;
-            border: 1px solid currentColor;
-            background: transparent;
-            color: inherit;
-            border-radius: 999px;
-            padding: 2px 7px;
-            font: inherit;
-            font-size: 0.68rem;
-            line-height: 1.2;
-            cursor: pointer;
-            opacity: 0.82;
+        .tree-node .node-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
         }
 
-        .descendant-toggle:hover,
-        .descendant-toggle:focus-visible {
+        .tree-node .descendant-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 24px;
+            padding: 3px 8px;
+            border: 1px solid currentColor;
+            border-radius: 7px;
+            background: rgba(0,0,0,.12);
+            color: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            opacity: .95;
+            position: relative;
+            z-index: 5;
+        }
+
+        .tree-node .descendant-toggle:hover,
+        .tree-node .descendant-toggle:focus-visible {
             opacity: 1;
-            outline: none;
-            background: rgba(127,127,127,.12);
+            transform: translateY(-1px);
+            outline: 2px solid currentColor;
+            outline-offset: 1px;
+        }
+
+        .tree-node .descendant-toggle[data-collapsed="true"] {
+            background: rgba(255,255,255,.14);
         }
     `;
     document.head.appendChild(style);
