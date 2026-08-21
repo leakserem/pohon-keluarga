@@ -11,9 +11,9 @@ export const APP = Object.freeze({
 export const TREE = Object.freeze({
     NODE_WIDTH: 220,
     NODE_HEIGHT: 110,
-    HORIZONTAL_GAP: 60,
+    HORIZONTAL_GAP: 28,
     VERTICAL_GAP: 180,
-    SPOUSE_GAP: 40,
+    SPOUSE_GAP: 24,
     ROOT_OFFSET_X: 40,
     ROOT_OFFSET_Y: 40,
     MIN_ZOOM: 0.30,
