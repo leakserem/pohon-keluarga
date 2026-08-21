@@ -13,6 +13,8 @@ import { initializeSearchBox } from "./components/searchBox.js";
 import { initializeDetailPanel } from "./components/detailPanel.js";
 import { initializeDialog } from "./components/dialog.js";
 import { initializeTreeCanvas, renderTree } from "./components/treeCanvas.js";
+
+import { initializePanelSlider } from "./components/panelSlider.js";
 import { Toast } from "./components/toast.js";
 
 window.addEventListener("DOMContentLoaded", startApplication);
@@ -31,6 +33,7 @@ async function startApplication() {
         initializeDetailPanel();
         initializeDialog();
         initializeTreeCanvas();
+        initializePanelSlider();
 
         await loadApplication();
         bindEvents();
