@@ -7,6 +7,7 @@ import { buildFamilyLayout, flattenLayout } from "./autoLayout.js";
 import { drawConnections } from "./connector.js";
 import { createTreeNode } from "./treeNode.js";
 import { TREE } from "../utils/constants.js";
+import { toggleCollapsed } from "./treeCollapse.js";
 
 let treeArea = null;
 let canvas = null;
@@ -38,6 +39,7 @@ export function initializeTreeCanvas() {
 
     initialized = true;
     subscribe(renderTree);
+    document.addEventListener("tree:toggle-descendants", onToggleDescendants);
     bindPointerEvents();
     bindWheelEvent();
     window.addEventListener("resize", onResize);
@@ -147,8 +149,11 @@ function updateTransform() {
     if (frameRequest !== null) cancelAnimationFrame(frameRequest);
 
     frameRequest = requestAnimationFrame(() => {
+        const transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
         canvas.style.transformOrigin = "0 0";
-        canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+        canvas.style.transform = transform;
+        svgLayer.style.transformOrigin = "0 0";
+        svgLayer.style.transform = transform;
         frameRequest = null;
     });
 }
@@ -197,6 +202,15 @@ function onResize() {
     renderTree();
 }
 
+function onToggleDescendants(event) {
+    const personId = event?.detail?.personId;
+    if (!personId) return;
+
+    // Toggle the collapse state and rebuild the geometry so the tree can shrink.
+    toggleCollapsed(personId);
+    renderTree();
+}
+
 export function destroyTree() {
     if (!initialized) return;
 
@@ -207,6 +221,7 @@ export function destroyTree() {
     window.removeEventListener("mousemove", onPointerMove);
     window.removeEventListener("mouseup", onPointerUp);
     window.removeEventListener("resize", onResize);
+    document.removeEventListener("tree:toggle-descendants", onToggleDescendants);
 
     if (frameRequest !== null) cancelAnimationFrame(frameRequest);
     clearCanvas();

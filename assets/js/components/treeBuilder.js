@@ -4,6 +4,7 @@
 
 import { getPeople } from "../store.js";
 import { getChildren, getRootPeople, getSpouse } from "./relationship.js";
+import { isCollapsed } from "./treeCollapse.js";
 
 export function buildTree() {
     return getRootPeople().map(root => buildBranch(root, new Set()));
@@ -15,6 +16,10 @@ function buildBranch(person, ancestors) {
 
     const spouse = getSpouse(person.id);
     const children = [];
+
+    if (isCollapsed(person.id)) {
+        return { person, spouse, children, collapsed: true };
+    }
 
     for (const child of getChildren(person.id)) {
         if (path.has(child.id)) {
