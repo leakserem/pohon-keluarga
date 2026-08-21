@@ -1,111 +1,35 @@
 /**
- * ==========================================================
- * Family Tree v2
- * validator.js
- * Data Validator
- * ==========================================================
+ * Family Tree v2 - Data validator
  */
 
-/* ==========================================================
-   ID
-========================================================== */
-
 export function isValidId(value) {
-
-    return typeof value === "string" &&
-
-        value.trim().length > 0;
-
+    return typeof value === "string" && value.trim().length > 0;
 }
-
-/* ==========================================================
-   NAME
-========================================================== */
 
 export function isValidName(value) {
-
-    return typeof value === "string" &&
-
-        value.trim().length > 0;
-
+    return typeof value === "string" && value.trim().length > 0;
 }
-
-/* ==========================================================
-   GENERATION
-========================================================== */
 
 export function isValidGeneration(value) {
-
     const number = Number(value);
-
-    return Number.isInteger(number) &&
-
-        number >= 1;
-
+    return Number.isInteger(number) && number >= 1;
 }
-
-/* ==========================================================
-   PHOTO
-========================================================== */
 
 export function isValidPhoto(value) {
-
-    if (
-
-        value === "" ||
-
-        value === null ||
-
-        value === undefined
-
-    ) {
-
-        return true;
-
-    }
-
+    if (value === "" || value === null || value === undefined) return true;
     return typeof value === "string";
-
 }
 
-/* ==========================================================
-   MEMBER
-========================================================== */
-
-export function validateMember(member) {
-
+export function validateMember(member = {}) {
     const errors = [];
+    if (!isValidId(member.id)) errors.push("ID tidak valid");
+    if (!isValidName(member.fullName)) errors.push("Nama lengkap wajib diisi");
+    if (!isValidGeneration(member.generation)) errors.push("Generasi tidak valid");
+    if (!isValidPhoto(member.photo)) errors.push("Foto tidak valid");
 
-    if (!isValidId(member.id)) {
+    if (member.fatherId && member.fatherId === member.id) errors.push("Ayah tidak boleh dirinya sendiri");
+    if (member.motherId && member.motherId === member.id) errors.push("Ibu tidak boleh dirinya sendiri");
+    if (member.spouseId && member.spouseId === member.id) errors.push("Pasangan tidak boleh dirinya sendiri");
 
-        errors.push("ID tidak valid");
-
-    }
-
-    if (!isValidName(member.fullName)) {
-
-        errors.push("Nama lengkap wajib diisi");
-
-    }
-
-    if (!isValidGeneration(member.generation)) {
-
-        errors.push("Generasi tidak valid");
-
-    }
-
-    if (!isValidPhoto(member.photo)) {
-
-        errors.push("Foto tidak valid");
-
-    }
-
-    return {
-
-        valid: errors.length === 0,
-
-        errors
-
-    };
-
+    return { valid: errors.length === 0, errors };
 }
