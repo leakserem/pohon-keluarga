@@ -1,184 +1,55 @@
 /**
- * ==========================================================
- * Family Tree v2
- * router.js
- * ==========================================================
+ * Family Tree v2 - Safe router
  */
 
+import { CONFIG } from "./config.js";
+
 const routes = new Map();
-
-let currentRoute = "";
-
-/* ==========================================================
-   PUBLIC
-========================================================== */
+let currentRoute = "tree";
 
 export function initializeRouter() {
-
     registerRoutes();
-
-    window.addEventListener(
-
-        "hashchange",
-
-        handleHashChange
-
-    );
-
-    document.addEventListener(
-
-        "route:tree",
-
-        () => navigate("tree")
-
-    );
-
-    document.addEventListener(
-
-        "route:timeline",
-
-        () => navigate("timeline")
-
-    );
-
-    document.addEventListener(
-
-        "route:statistics",
-
-        () => navigate("statistics")
-
-    );
-
-    document.addEventListener(
-
-        "route:settings",
-
-        () => navigate("settings")
-
-    );
-
+    window.addEventListener("hashchange", handleHashChange);
+    document.addEventListener("route:tree", () => navigate("tree"));
+    document.addEventListener("route:timeline", () => navigate("timeline"));
+    document.addEventListener("route:statistics", () => navigate("statistics"));
+    document.addEventListener("route:settings", () => navigate("settings"));
     handleHashChange();
-
 }
-
-/* ==========================================================
-   ROUTES
-========================================================== */
 
 function registerRoutes() {
-
-    routes.set(
-
-        "tree",
-
-        () => showView("treeView")
-
-    );
-
-    routes.set(
-
-        "timeline",
-
-        () => showView("timelineView")
-
-    );
-
-    routes.set(
-
-        "statistics",
-
-        () => showView("statisticsView")
-
-    );
-
-    routes.set(
-
-        "settings",
-
-        () => showView("settingsView")
-
-    );
-
+    routes.clear();
+    routes.set("tree", () => showView("treeView"));
+    routes.set("timeline", () => showView("timelineView"));
+    routes.set("statistics", () => showView("statisticsView"));
+    routes.set("settings", () => showView("settingsView"));
 }
-
-/* ==========================================================
-   NAVIGATE
-========================================================== */
 
 export function navigate(route) {
-
-    if (!routes.has(route))
-
-        route = "tree";
-
-    if (currentRoute === route)
-
+    const target = routes.has(route) ? route : "tree";
+    if (currentRoute === target) {
+        handleHashChange();
         return;
-
-    window.location.hash =
-
-        route;
-
+    }
+    window.location.hash = target;
 }
-
-/* ==========================================================
-   HASH
-========================================================== */
 
 function handleHashChange() {
-
-    const hash =
-
-        window.location.hash
-
-            .replace("#", "")
-
-            .trim() ||
-
-        "tree";
-
-    currentRoute = hash;
-
-    const handler =
-
-        routes.get(hash) ||
-
-        routes.get("tree");
-
-    handler();
-
+    const hash = window.location.hash.replace(/^#\/?/, "").trim();
+    const route = routes.has(hash) ? hash : "tree";
+    currentRoute = route;
+    routes.get(route)?.();
+    document.dispatchEvent(new CustomEvent(CONFIG.EVENTS.ROUTE_CHANGED, { detail: route }));
 }
-
-/* ==========================================================
-   VIEW
-========================================================== */
 
 function showView(id) {
-
-    document
-
-        .querySelectorAll(
-
-            ".app-view"
-
-        )
-
-        .forEach(view => {
-
-            view.hidden =
-
-                view.id !== id;
-
-        });
-
+    const views = [...document.querySelectorAll(".app-view")];
+    if (!views.length) return;
+    views.forEach(view => {
+        view.hidden = view.id !== id;
+    });
 }
 
-/* ==========================================================
-   INFO
-========================================================== */
-
 export function getCurrentRoute() {
-
     return currentRoute;
-
 }
