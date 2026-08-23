@@ -47,8 +47,8 @@ export const EVENTS = Object.freeze({
 
 export const SVG = Object.freeze({
     NAMESPACE: "http://www.w3.org/2000/svg",
-    LINE_COLOR: "#63e6b0",
-    LINE_WIDTH: 4
+    LINE_COLOR: "#ffd166",
+    LINE_WIDTH: 6
 });
 
 export const API = Object.freeze({
