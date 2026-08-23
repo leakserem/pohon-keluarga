@@ -1,7 +1,11 @@
 /**
- * Family Tree v2 - API layer
+ * Family Tree v2.9 - API layer
+ *
+ * Backend contract:
+ * GET  -> { ok:true, data:[...] }
+ * POST { action:"create"|"update"|"delete", person|id }
+ * POST may include person.photoDataUrl for Drive upload.
  */
-
 import { CONFIG } from "./config.js";
 
 const API_URL = CONFIG.API.BASE_URL;
@@ -21,9 +25,7 @@ async function request(method = "GET", payload = null) {
             const options = {
                 method,
                 signal: controller.signal,
-                headers: {
-                    Accept: "application/json"
-                }
+                headers: { Accept: "application/json" }
             };
 
             if (payload !== null) {
@@ -35,16 +37,19 @@ async function request(method = "GET", payload = null) {
             const raw = await response.text();
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${raw.slice(0, 300)}`);
+                throw new Error(`HTTP ${response.status}: ${raw.slice(0, 500)}`);
             }
 
             let data;
             try {
                 data = raw ? JSON.parse(raw) : null;
             } catch {
-                throw new Error(`API mengembalikan JSON tidak valid: ${raw.slice(0, 300)}`);
+                throw new Error(`API JSON tidak valid: ${raw.slice(0, 500)}`);
             }
 
+            if (data && typeof data === "object" && data.ok === false) {
+                throw new Error(String(data.error || "Operasi API gagal"));
+            }
             if (data && typeof data === "object" && data.error) {
                 throw new Error(String(data.error));
             }
@@ -70,21 +75,19 @@ function normalizeResponse(data) {
     if (Array.isArray(data)) return data;
 
     if (data && typeof data === "object") {
-        const candidates = [
+        for (const candidate of [
             data.data,
             data.people,
             data.members,
             data.results,
             data.rows
-        ];
-
-        for (const candidate of candidates) {
+        ]) {
             if (Array.isArray(candidate)) return candidate;
         }
     }
 
     throw new Error(
-        `Format response API tidak dikenali. Diterima: ${JSON.stringify(data).slice(0, 500)}`
+        `Format response API tidak dikenali: ${JSON.stringify(data).slice(0, 500)}`
     );
 }
 
@@ -92,12 +95,12 @@ function normalizePerson(person = {}) {
     return {
         id: String(person.id ?? "").trim(),
         fullName: String(person.fullName ?? person.name ?? "").trim(),
-        generation: Number.isInteger(Number(person.generation))
-            ? Number(person.generation)
-            : 1,
+        generation: Number.isInteger(Number(person.generation)) ? Number(person.generation) : 1,
         fatherId: String(person.fatherId ?? person.father_id ?? "").trim(),
         motherId: String(person.motherId ?? person.mother_id ?? "").trim(),
         spouseId: String(person.spouseId ?? person.spouse_id ?? "").trim(),
+        motherName: String(person.motherName ?? person.mother_name ?? "").trim(),
+        spouseName: String(person.spouseName ?? person.spouse_name ?? "").trim(),
         photo: String(person.photo ?? person.photoUrl ?? "").trim(),
         notes: String(person.notes ?? "").trim(),
         birthDate: String(person.birthDate ?? person.birth_date ?? "").trim(),
@@ -112,7 +115,8 @@ export async function loadPeople() {
 }
 
 export async function createPerson(person) {
-    return request("POST", { action: "create", person });
+    const data = await request("POST", { action: "create", person });
+    return data;
 }
 
 export async function updatePerson(person) {
