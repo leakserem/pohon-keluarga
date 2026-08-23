@@ -93,21 +93,30 @@ function injectStyles() {
     style.textContent = `
         .tree-node .node-title {
             min-width: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            column-gap: 8px;
+            width: 100%;
         }
 
         .tree-node .node-title h3 {
             margin: 0;
             min-width: 0;
+            max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            line-height: 1.2;
         }
 
         .tree-node .node-actions {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 6px;
-            margin-top: 6px;
+            margin: 0;
+            flex: 0 0 auto;
         }
 
         .tree-node .descendant-toggle {
@@ -115,6 +124,7 @@ function injectStyles() {
             align-items: center;
             justify-content: center;
             min-height: 24px;
+            min-width: 88px;
             padding: 3px 8px;
             border: 1px solid currentColor;
             border-radius: 7px;

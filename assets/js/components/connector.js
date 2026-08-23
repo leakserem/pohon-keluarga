@@ -1,33 +1,30 @@
 /**
- * Family Tree v2.4 - Relationship connectors
+ * Family Tree v2.5 - Relationship connectors
  */
 
 import { TREE, SVG } from "../utils/constants.js";
 
-const STROKE_WIDTH = Math.max(4, Number(SVG.LINE_WIDTH) || 4);
+const STROKE_WIDTH = Math.max(5, Number(SVG.LINE_WIDTH) || 5);
 const STROKE_OPACITY = "0.95";
 
 export function drawConnections(svg, tree) {
     if (!svg) return;
     svg.replaceChildren();
     svg.setAttribute("fill", "none");
-
-    tree.forEach(root => walk(root, svg));
+    for (const root of tree) walk(root, svg);
 }
 
 function walk(node, svg) {
     drawSpouse(node, svg);
     drawChildren(node, svg);
-    node.children.forEach(child => walk(child, svg));
+    for (const child of node.children || []) walk(child, svg);
 }
 
 function drawSpouse(node, svg) {
     if (!node?.spouse) return;
-
     const x1 = node.person.x + TREE.NODE_WIDTH;
     const x2 = node.spouse.x;
     const y = node.person.y + TREE.NODE_HEIGHT / 2;
-
     appendLine(svg, x1, y, x2, y);
 }
 
@@ -44,9 +41,19 @@ function drawChildren(node, svg) {
 
     for (const child of node.children) {
         const childCenter = child.person.x + TREE.NODE_WIDTH / 2;
-        const childY = child.person.y;
-        appendCurve(svg, parentX, parentY, childCenter, childY);
+        appendCurve(svg, parentX, parentY, childCenter, child.person.y);
     }
+}
+
+function styleShape(shape) {
+    shape.setAttribute("stroke", SVG.LINE_COLOR);
+    shape.setAttribute("stroke-width", String(STROKE_WIDTH));
+    shape.setAttribute("stroke-linecap", "round");
+    shape.setAttribute("stroke-linejoin", "round");
+    shape.setAttribute("opacity", STROKE_OPACITY);
+    shape.setAttribute("fill", "none");
+    shape.setAttribute("vector-effect", "non-scaling-stroke");
+    shape.classList.add("tree-line");
 }
 
 function appendLine(svg, x1, y1, x2, y2) {
@@ -55,11 +62,7 @@ function appendLine(svg, x1, y1, x2, y2) {
     line.setAttribute("y1", y1);
     line.setAttribute("x2", x2);
     line.setAttribute("y2", y2);
-    line.setAttribute("stroke", SVG.LINE_COLOR);
-    line.setAttribute("stroke-width", STROKE_WIDTH);
-    line.setAttribute("stroke-linecap", "round");
-    line.setAttribute("opacity", STROKE_OPACITY);
-    line.setAttribute("fill", "none");
+    styleShape(line);
     svg.appendChild(line);
 }
 
@@ -67,12 +70,6 @@ function appendCurve(svg, x1, y1, x2, y2) {
     const path = document.createElementNS(SVG.NAMESPACE, "path");
     const middle = (y1 + y2) / 2;
     path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${middle} ${x2} ${middle} ${x2} ${y2}`);
-    path.setAttribute("stroke", SVG.LINE_COLOR);
-    path.setAttribute("stroke-width", STROKE_WIDTH);
-    path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-linejoin", "round");
-    path.setAttribute("opacity", STROKE_OPACITY);
-    path.setAttribute("fill", "none");
-    path.classList.add("tree-line");
+    styleShape(path);
     svg.appendChild(path);
 }
