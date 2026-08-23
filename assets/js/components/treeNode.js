@@ -131,41 +131,40 @@ function injectStyles() {
             display: block;
         }
 
-        /* Inside the content area: name | button */
+            /* Content is vertical: full name first, descendant button below. */
         .tree-node .node-title {
             min-width: 0;
             width: 100%;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            align-items: center;
-            column-gap: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 7px;
         }
 
         .tree-node .node-title h3 {
             margin: 0;
+            width: 100%;
             min-width: 0;
             max-width: 100%;
-            overflow: hidden;
-            line-height: 1.22;
+            overflow: visible;
+            line-height: 1.18;
             white-space: normal;
             overflow-wrap: anywhere;
             word-break: break-word;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
+            display: block;
         }
 
         .tree-node .node-actions {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            min-width: 96px;
-            width: 96px;
-            flex: 0 0 96px;
+            justify-content: flex-start;
+            width: 100%;
+            min-width: 0;
         }
 
         .tree-node .descendant-toggle {
-            width: 96px;
+            width: 108px;
             min-height: 30px;
             padding: 5px 8px;
             border: 1px solid rgba(255,255,255,.95);

@@ -4,8 +4,8 @@
 
 import { TREE, SVG } from "../utils/constants.js";
 
-const STROKE_WIDTH = Math.max(5, Number(SVG.LINE_WIDTH) || 5);
-const STROKE_OPACITY = "0.95";
+const STROKE_WIDTH = 6;
+const STROKE_OPACITY = "1";
 
 export function drawConnections(svg, tree) {
     if (!svg) return;
@@ -47,7 +47,9 @@ function drawChildren(node, svg) {
 
 function styleShape(shape) {
     shape.setAttribute("stroke", SVG.LINE_COLOR);
+    shape.style.setProperty("stroke", SVG.LINE_COLOR, "important");
     shape.setAttribute("stroke-width", String(STROKE_WIDTH));
+    shape.style.setProperty("stroke-width", String(STROKE_WIDTH), "important");
     shape.setAttribute("stroke-linecap", "round");
     shape.setAttribute("stroke-linejoin", "round");
     shape.setAttribute("opacity", STROKE_OPACITY);
