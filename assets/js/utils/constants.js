@@ -9,7 +9,7 @@ export const APP = Object.freeze({
 });
 
 export const TREE = Object.freeze({
-    NODE_WIDTH: 220,
+    NODE_WIDTH: 320,
     NODE_HEIGHT: 110,
     HORIZONTAL_GAP: 28,
     VERTICAL_GAP: 180,
