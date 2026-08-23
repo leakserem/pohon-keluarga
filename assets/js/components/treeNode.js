@@ -1,5 +1,11 @@
 /**
- * Family Tree v2.4 - Tree node
+ * Family Tree v2.6 - Tree node
+ *
+ * Layout goals:
+ * - avatar on the left
+ * - name + descendant control in two real columns
+ * - long names may wrap to two lines instead of being reduced to "K..."
+ * - the descendant button never overlaps the name
  */
 
 import { create, text, emit } from "../utils/dom.js";
@@ -8,7 +14,7 @@ import * as Format from "../utils/formatter.js";
 import { getPhoto } from "../utils/image.js";
 import { isCollapsed } from "./treeCollapse.js";
 
-const STYLE_ID = "family-tree-node-controls-v24";
+const STYLE_ID = "family-tree-node-controls-v26";
 
 export function createTreeNode(person) {
     injectStyles();
@@ -20,6 +26,7 @@ export function createTreeNode(person) {
     node.style.top = `${person.y}px`;
 
     const header = create("div", "node-header");
+
     const avatar = create("div", "node-avatar");
     const image = create("img");
     image.loading = "lazy";
@@ -32,8 +39,10 @@ export function createTreeNode(person) {
     avatar.appendChild(image);
 
     const title = create("div", "node-title");
+
     const h3 = create("h3");
     text(h3, Format.fullName(person.fullName));
+    h3.title = Format.fullName(person.fullName);
 
     const actions = create("div", "node-actions");
     const descendantButton = create("button", "descendant-toggle");
@@ -49,6 +58,7 @@ export function createTreeNode(person) {
         "aria-label",
         `${collapsed ? "Buka" : "Tutup"} keturunan ${Format.fullName(person.fullName)}`
     );
+
     descendantButton.addEventListener("click", event => {
         event.preventDefault();
         event.stopPropagation();
@@ -91,13 +101,44 @@ function injectStyles() {
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
+        /* The card is wide enough to give both columns usable space. */
+        .tree-node {
+            width: 320px;
+            min-width: 320px;
+            box-sizing: border-box;
+        }
+
+        /* Real two-column header: avatar | content */
+        .tree-node .node-header {
+            display: grid;
+            grid-template-columns: 58px minmax(0, 1fr);
+            align-items: center;
+            column-gap: 12px;
+            min-width: 0;
+        }
+
+        .tree-node .node-avatar {
+            width: 58px;
+            height: 58px;
+            flex: 0 0 58px;
+            overflow: hidden;
+        }
+
+        .tree-node .node-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Inside the content area: name | button */
         .tree-node .node-title {
             min-width: 0;
+            width: 100%;
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
             align-items: center;
-            column-gap: 8px;
-            width: 100%;
+            column-gap: 10px;
         }
 
         .tree-node .node-title h3 {
@@ -105,52 +146,65 @@ function injectStyles() {
             min-width: 0;
             max-width: 100%;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            line-height: 1.2;
+            line-height: 1.22;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
         }
 
         .tree-node .node-actions {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 6px;
-            margin: 0;
-            flex: 0 0 auto;
+            min-width: 96px;
+            width: 96px;
+            flex: 0 0 96px;
         }
 
         .tree-node .descendant-toggle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 24px;
-            min-width: 88px;
-            padding: 3px 8px;
-            border: 1px solid currentColor;
-            border-radius: 7px;
+            width: 96px;
+            min-height: 30px;
+            padding: 5px 8px;
+            border: 1px solid rgba(255,255,255,.95);
+            border-radius: 8px;
             background: rgba(0,0,0,.12);
             color: inherit;
             font-size: 11px;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.1;
             white-space: nowrap;
             cursor: pointer;
             user-select: none;
-            opacity: .95;
             position: relative;
             z-index: 5;
         }
 
         .tree-node .descendant-toggle:hover,
         .tree-node .descendant-toggle:focus-visible {
-            opacity: 1;
-            transform: translateY(-1px);
-            outline: 2px solid currentColor;
+            background: rgba(255,255,255,.18);
+            outline: 2px solid rgba(255,255,255,.8);
             outline-offset: 1px;
         }
 
         .tree-node .descendant-toggle[data-collapsed="true"] {
-            background: rgba(255,255,255,.14);
+            background: rgba(255,255,255,.12);
+        }
+
+        @media (max-width: 700px) {
+            .tree-node {
+                width: 300px;
+                min-width: 300px;
+            }
+
+            .tree-node .node-actions,
+            .tree-node .descendant-toggle {
+                width: 90px;
+                min-width: 90px;
+                flex-basis: 90px;
+            }
         }
     `;
     document.head.appendChild(style);
