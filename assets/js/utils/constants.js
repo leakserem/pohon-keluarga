@@ -1,11 +1,6 @@
-/**
- * Family Tree v2 - Shared constants
- * Keep one source of truth: values mirror config.js.
- */
-
 export const APP = Object.freeze({
     NAME: "Pohon Keluarga Kami",
-    VERSION: "2.1"
+    VERSION: "2.9"
 });
 
 export const TREE = Object.freeze({
@@ -22,36 +17,9 @@ export const TREE = Object.freeze({
     ZOOM_STEP: 0.10
 });
 
-export const SIDEBAR = Object.freeze({
-    SEARCH_DELAY: 300,
-    DEFAULT_GENERATION: "all"
-});
-
-export const MEMBER = Object.freeze({
-    DEFAULT_PHOTO: "assets/images/avatar.svg",
-    UNKNOWN_TEXT: "-"
-});
-
-export const STORAGE = Object.freeze({
-    THEME: "familyTree.theme",
-    ZOOM: "familyTree.zoom",
-    PAN_X: "familyTree.panX",
-    PAN_Y: "familyTree.panY"
-});
-
-export const EVENTS = Object.freeze({
-    MEMBER_SELECTED: "member:selected",
-    TREE_REFRESH: "tree:refresh",
-    DATA_UPDATED: "data:updated"
-});
-
-export const SVG = Object.freeze({
-    NAMESPACE: "http://www.w3.org/2000/svg",
-    LINE_COLOR: "#ffd166",
-    LINE_WIDTH: 6
-});
-
-export const API = Object.freeze({
-    TIMEOUT: 10000,
-    RETRY: 2
-});
+export const SIDEBAR = Object.freeze({ SEARCH_DELAY: 300, DEFAULT_GENERATION: "all" });
+export const MEMBER = Object.freeze({ DEFAULT_PHOTO: "", UNKNOWN_TEXT: "-" });
+export const STORAGE = Object.freeze({ THEME: "familyTree.theme", ZOOM: "familyTree.zoom", PAN_X: "familyTree.panX", PAN_Y: "familyTree.panY" });
+export const EVENTS = Object.freeze({ MEMBER_SELECTED: "member:selected", TREE_REFRESH: "tree:refresh", DATA_UPDATED: "data:updated", ROUTE_TREE: "route:tree", ROUTE_TIMELINE: "route:timeline", ROUTE_STATISTICS: "route:statistics" });
+export const SVG = Object.freeze({ NAMESPACE: "http://www.w3.org/2000/svg", LINE_COLOR: "#ffd166", LINE_WIDTH: 6 });
+export const API = Object.freeze({ TIMEOUT: 20000, RETRY: 2, MAX_PHOTO_BYTES: 20 * 1024 });
