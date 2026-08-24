@@ -1,10 +1,6 @@
 /**
- * Family Tree v2.9 - API layer
- *
- * Backend contract:
- * GET  -> { ok:true, data:[...] }
- * POST { action:"create"|"update"|"delete", person|id }
- * POST may include person.photoDataUrl for Drive upload.
+ * Family Tree v3.2 - API layer
+ * Keeps the existing API contract while carrying childOrder and canonical names.
  */
 import { CONFIG } from "./config.js";
 
@@ -48,10 +44,10 @@ async function request(method = "GET", payload = null) {
             }
 
             if (data && typeof data === "object" && data.ok === false) {
-                throw new Error(String(data.error || "Operasi API gagal"));
-            }
-            if (data && typeof data === "object" && data.error) {
-                throw new Error(String(data.error));
+                const message = typeof data.error === "object"
+                    ? data.error.message
+                    : data.error;
+                throw new Error(String(message || "Operasi API gagal"));
             }
 
             return data;
@@ -91,21 +87,30 @@ function normalizeResponse(data) {
     );
 }
 
+function text(value) {
+    return String(value ?? "").trim();
+}
+
 function normalizePerson(person = {}) {
     return {
-        id: String(person.id ?? "").trim(),
-        fullName: String(person.fullName ?? person.name ?? "").trim(),
+        id: text(person.id),
+        fullName: text(person.fullName ?? person.name),
+        childOrder: Number.isInteger(Number(person.childOrder)) ? Number(person.childOrder) : 0,
         generation: Number.isInteger(Number(person.generation)) ? Number(person.generation) : 1,
-        fatherId: String(person.fatherId ?? person.father_id ?? "").trim(),
-        motherId: String(person.motherId ?? person.mother_id ?? "").trim(),
-        spouseId: String(person.spouseId ?? person.spouse_id ?? "").trim(),
-        motherName: String(person.motherName ?? person.mother_name ?? "").trim(),
-        spouseName: String(person.spouseName ?? person.spouse_name ?? "").trim(),
-        photo: String(person.photo ?? person.photoUrl ?? "").trim(),
-        notes: String(person.notes ?? "").trim(),
-        birthDate: String(person.birthDate ?? person.birth_date ?? "").trim(),
-        deathDate: String(person.deathDate ?? person.death_date ?? "").trim(),
-        gender: String(person.gender ?? "").trim()
+        fatherId: text(person.fatherId ?? person.father_id),
+        fatherName: text(person.fatherName ?? person.father_name),
+        motherId: text(person.motherId ?? person.mother_id),
+        motherName: text(person.motherName ?? person.mother_name),
+        spouseId: text(person.spouseId ?? person.spouse_id),
+        spouseName: text(person.spouseName ?? person.spouse_name),
+        birthDate: text(person.birthDate ?? person.birth_date),
+        deathDate: text(person.deathDate ?? person.death_date),
+        photo: text(person.photo ?? person.photoUrl),
+        Gender: text(person.Gender ?? person.gender),
+        CreatedAt: person.CreatedAt ?? person.createdAt ?? "",
+        UpdatedAt: person.UpdatedAt ?? person.updatedAt ?? "",
+        Source: text(person.Source ?? person.source),
+        notes: String(person.notes ?? "")
     };
 }
 
@@ -115,8 +120,7 @@ export async function loadPeople() {
 }
 
 export async function createPerson(person) {
-    const data = await request("POST", { action: "create", person });
-    return data;
+    return request("POST", { action: "create", person });
 }
 
 export async function updatePerson(person) {
@@ -135,3 +139,5 @@ export async function ping() {
         return false;
     }
 }
+
+export { normalizePerson };
