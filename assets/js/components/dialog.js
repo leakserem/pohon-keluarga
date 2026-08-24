@@ -1,13 +1,39 @@
 /**
- * Family Tree v2.9 - Member dialog
- * Adds: mother/spouse name selectors + 20 KiB Drive-upload photo flow.
+ * Family Tree v3.2 - Member dialog
+ * Only the member data form is changed. Existing toolbar/dialog lifecycle is preserved.
+ *
+ * Canonical form order:
+ * ID
+ * NAMA LENGKAP
+ * GENDER
+ * URUTAN ANAK
+ * GENERASI
+ * fatherId
+ * AYAH
+ * motherId
+ * IBU
+ * spouseId
+ * PASANGAN
+ * TANGGAL LAHIR
+ * TANGGAL WAFAT
+ * FOTO
+ * CATATAN
  */
 
 import { createMemberId } from "../utils/uuid.js";
 import { createPerson, updatePerson, deletePerson } from "../api.js";
-import { addPerson, getPeople, updatePerson as updateStore, removePerson } from "../store.js";
+import {
+    addPerson,
+    getPeople,
+    updatePerson as updateStore,
+    removePerson
+} from "../store.js";
 import { Toast } from "./toast.js";
-import { compressPhoto, applyPhotoPreview, MAX_PHOTO_BYTES } from "./photoUpload.js";
+import {
+    compressPhoto,
+    applyPhotoPreview,
+    MAX_PHOTO_BYTES
+} from "./photoUpload.js";
 
 let dialog = null;
 let title = null;
@@ -29,20 +55,23 @@ export function openAddMember() {
     editingId = null;
     pendingPhotoDataUrl = "";
     pendingPhotoBytes = 0;
+
     openWithPerson({
         id: createMemberId(),
         fullName: "",
+        Gender: "",
+        childOrder: 0,
         generation: 1,
         fatherId: "",
+        fatherName: "",
         motherId: "",
-        spouseId: "",
         motherName: "",
+        spouseId: "",
         spouseName: "",
-        photo: "",
-        notes: "",
         birthDate: "",
         deathDate: "",
-        gender: ""
+        photo: "",
+        notes: ""
     }, "Tambah Anggota", false);
 }
 
@@ -64,44 +93,52 @@ function openWithPerson(person, heading, edit) {
 
 function createForm(person) {
     const form = document.createElement("div");
-    form.className = "member-form member-form-v29";
+    form.className = "member-form member-form-v32";
 
     form.append(
         fieldInput("memberId", "ID", person.id, "text", true),
-        fieldInput("memberName", "Nama Lengkap", person.fullName, "text", false),
-        fieldInput("memberGeneration", "Generasi", person.generation, "number", false),
-        createRelationSelect("memberFather", "Nama Ayah", person.fatherId, person.id, "male"),
-        createRelationSelect("memberMother", "Nama Ibu", person.motherId, person.id, "female"),
-        createRelationSelect("memberSpouse", "Nama Pasangan", person.spouseId, person.id, "any"),
-        fieldInput("memberBirthDate", "Tanggal Lahir", person.birthDate, "date", false),
-        fieldInput("memberDeathDate", "Tanggal Wafat", person.deathDate, "date", false),
-        fieldInput("memberGender", "Jenis Kelamin", person.gender, "text", false)
+        fieldInput("memberName", "NAMA LENGKAP", String(person.fullName || "").toUpperCase(), "text", false, true),
+        fieldInput("memberGender", "GENDER", String(person.Gender ?? person.gender ?? "").toUpperCase(), "text", false, true),
+        fieldInput("memberChildOrder", "URUTAN ANAK", Number.isFinite(Number(person.childOrder)) ? Number(person.childOrder) : 0, "number", false, false, "0"),
+        fieldInput("memberGeneration", "GENERASI", Number.isFinite(Number(person.generation)) ? Number(person.generation) : 1, "number", false, false, "1"),
+        fieldInput("memberFatherId", "fatherId", person.fatherId, "text", true),
+        createRelationSelect("memberFather", "AYAH", person.fatherId, person.id, "male"),
+        fieldInput("memberFatherName", "NAMA AYAH", String(person.fatherName || "").toUpperCase(), "text", true),
+        fieldInput("memberMotherId", "motherId", person.motherId, "text", false),
+        fieldInput("memberMother", "IBU", String(person.motherName || "").toUpperCase(), "text", false, true),
+        fieldInput("memberSpouseId", "spouseId", person.spouseId, "text", false),
+        fieldInput("memberSpouse", "PASANGAN", String(person.spouseName || "").toUpperCase(), "text", false, true),
+        fieldInput("memberBirthDate", "TANGGAL LAHIR", person.birthDate, "date", false),
+        fieldInput("memberDeathDate", "TANGGAL WAFAT", person.deathDate, "date", false),
+        createPhotoField(person.photo),
+        createNotesField(person.notes)
     );
 
-    form.appendChild(createPhotoField(person.photo));
-
-    const notesLabel = document.createElement("label");
-    notesLabel.htmlFor = "memberNotes";
-    notesLabel.textContent = "Catatan";
-    const notes = document.createElement("textarea");
-    notes.id = "memberNotes";
-    notes.value = person.notes ?? "";
-    notesLabel.appendChild(notes);
-    notesLabel.classList.add("member-notes-field");
-    form.appendChild(notesLabel);
+    syncRelation(form, "#memberFather", "#memberFatherId");
 
     return form;
 }
 
-function fieldInput(id, labelText, value, type, readOnly) {
+function fieldInput(id, labelText, inputValue, type = "text", readOnly = false, uppercase = false, placeholder = "") {
     const label = document.createElement("label");
     label.htmlFor = id;
     label.textContent = labelText;
+
     const input = document.createElement("input");
     input.id = id;
     input.type = type;
-    input.value = value ?? "";
+    input.value = inputValue ?? "";
     input.readOnly = readOnly;
+
+    if (placeholder) input.placeholder = placeholder;
+
+    if (uppercase) {
+        input.style.textTransform = "uppercase";
+        input.addEventListener("input", () => {
+            input.value = input.value.toUpperCase();
+        });
+    }
+
     label.appendChild(input);
     return label;
 }
@@ -116,18 +153,21 @@ function createRelationSelect(id, labelText, selectedId, currentId, genderFilter
 
     const empty = document.createElement("option");
     empty.value = "";
-    empty.textContent = `— pilih ${labelText.toLowerCase()} —`;
+    empty.textContent = `— PILIH ${labelText} —`;
     select.appendChild(empty);
 
     const people = [...getPeople()]
         .filter(person => person.id !== currentId)
-        .filter(person => genderFilter === "any" || !person.gender || person.gender.toLowerCase() === genderFilter)
-        .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || "", "id"));
+        .filter(person => {
+            const gender = String(person.Gender ?? person.gender ?? "").trim().toLowerCase();
+            return genderFilter === "any" || !gender || gender === genderFilter;
+        })
+        .sort((a, b) => String(a.fullName || "").localeCompare(String(b.fullName || ""), "id"));
 
     people.forEach(person => {
         const option = document.createElement("option");
         option.value = person.id;
-        option.textContent = person.fullName || person.id;
+        option.textContent = String(person.fullName || person.id).toUpperCase();
         option.selected = person.id === selectedId;
         select.appendChild(option);
     });
@@ -136,12 +176,32 @@ function createRelationSelect(id, labelText, selectedId, currentId, genderFilter
     return label;
 }
 
+function syncRelation(form, selectSelector, idSelector) {
+    const select = form.querySelector(selectSelector);
+    const idInput = form.querySelector(idSelector);
+    const nameInput = form.querySelector("#memberFatherName");
+    if (!select || !idInput) return;
+
+    const sync = () => {
+        idInput.value = select.value || "";
+        if (nameInput) {
+            const selected = select.options[select.selectedIndex];
+            nameInput.value = selected && selected.value
+                ? String(selected.textContent || "").toUpperCase()
+                : "";
+        }
+    };
+
+    select.addEventListener("change", sync);
+    sync();
+}
+
 function createPhotoField(existingUrl) {
     const wrapper = document.createElement("div");
     wrapper.className = "photo-field";
 
     const label = document.createElement("label");
-    label.textContent = "Foto Anggota (maks. 20 KB)";
+    label.textContent = "FOTO";
 
     const controls = document.createElement("div");
     controls.className = "photo-controls";
@@ -198,6 +258,19 @@ function createPhotoField(existingUrl) {
     return wrapper;
 }
 
+function createNotesField(notesValue) {
+    const label = document.createElement("label");
+    label.className = "member-notes-field";
+    label.htmlFor = "memberNotes";
+    label.textContent = "CATATAN";
+
+    const notes = document.createElement("textarea");
+    notes.id = "memberNotes";
+    notes.value = notesValue ?? "";
+    label.appendChild(notes);
+    return label;
+}
+
 function createButtons(edit) {
     const buttons = [];
 
@@ -231,47 +304,56 @@ function createButtons(edit) {
 }
 
 function collect() {
-    const motherId = value("#memberMother");
-    const spouseId = value("#memberSpouse");
-    const people = getPeople();
+    const fatherId = value("#memberFather").trim();
+    const fatherName = value("#memberFatherName").trim().toUpperCase();
 
     return {
-        id: value("#memberId"),
-        fullName: value("#memberName").trim(),
+        id: value("#memberId").trim(),
+        fullName: value("#memberName").trim().toUpperCase(),
+        Gender: value("#memberGender").trim().toUpperCase(),
+        childOrder: Number(value("#memberChildOrder")),
         generation: Number(value("#memberGeneration")),
-        fatherId: value("#memberFather").trim(),
-        motherId,
-        spouseId,
-        motherName: people.find(p => p.id === motherId)?.fullName || "",
-        spouseName: people.find(p => p.id === spouseId)?.fullName || "",
-        photo: value("#memberPhoto").trim(),
-        photoDataUrl: pendingPhotoDataUrl,
-        photoBytes: pendingPhotoBytes,
-        photoMaxBytes: MAX_PHOTO_BYTES,
+        fatherId,
+        fatherName,
+        motherId: value("#memberMotherId").trim(),
+        motherName: value("#memberMother").trim().toUpperCase(),
+        spouseId: value("#memberSpouseId").trim(),
+        spouseName: value("#memberSpouse").trim().toUpperCase(),
         birthDate: value("#memberBirthDate").trim(),
         deathDate: value("#memberDeathDate").trim(),
-        gender: value("#memberGender").trim(),
-        notes: value("#memberNotes").trim()
+        photo: "",
+        photoDataUrl: pendingPhotoDataUrl,
+        photoBytes: pendingPhotoBytes,
+        notes: value("#memberNotes")
     };
 }
 
 async function save() {
     const person = collect();
+    const saveButton = document.querySelector("#btnSave");
 
     try {
-        if (!person.fullName) throw new Error("Nama lengkap wajib diisi.");
+        if (!person.fullName) throw new Error("NAMA LENGKAP wajib diisi.");
+        if (!Number.isInteger(person.childOrder) || person.childOrder < 0) {
+            throw new Error("URUTAN ANAK harus berupa angka 0 atau lebih.");
+        }
         if (!Number.isInteger(person.generation) || person.generation < 1) {
-            throw new Error("Generasi harus berupa angka minimal 1.");
+            throw new Error("GENERASI harus berupa angka minimal 1.");
         }
         if (person.photoDataUrl && person.photoBytes > MAX_PHOTO_BYTES) {
             throw new Error("Ukuran foto harus maksimal 20 KB.");
+        }
+
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.textContent = "Menyimpan…";
         }
 
         if (editingId) {
             const response = await updatePerson(person);
             const returned = response?.data?.person || response?.person;
             updateStore(person.id, returned ? { ...person, ...returned } : person);
-            Toast.success("Data diperbarui ke Google Sheets.");
+            Toast.success("Data diperbarui ke Members dan Submissions.");
         } else {
             const response = await createPerson(person);
             const returned = response?.data?.person || response?.person || person;
@@ -283,8 +365,12 @@ async function save() {
 
         close();
     } catch (error) {
-        console.error(error);
+        console.error("Save member error:", error);
         Toast.error(error?.message || "Gagal menyimpan data.");
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.textContent = "Simpan";
+        }
     }
 }
 
@@ -297,7 +383,7 @@ async function remove() {
         Toast.success("Anggota dihapus.");
         close();
     } catch (error) {
-        console.error(error);
+        console.error("Delete member error:", error);
         Toast.error(error?.message || "Gagal menghapus.");
     }
 }
@@ -305,6 +391,7 @@ async function remove() {
 export function close() {
     pendingPhotoDataUrl = "";
     pendingPhotoBytes = 0;
+    editingId = null;
     dialog?.close();
 }
 
@@ -319,29 +406,42 @@ export const Dialog = {
     close
 };
 
-// UI styling for photo + relationship selectors.
-(function injectDialogV29Styles() {
-    const STYLE_ID = "member-dialog-v29-styles";
+(function injectDialogV32Styles() {
+    const STYLE_ID = "member-dialog-v32-styles";
     if (document.getElementById(STYLE_ID)) return;
+
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
-        #memberDialog .member-form-v29 {
+        #memberDialog .member-form-v32 {
             display:grid;
             grid-template-columns:repeat(2,minmax(0,1fr));
             gap:16px;
         }
-        #memberDialog .member-form-v29 > label,
-        #memberDialog .member-form-v29 > .photo-field {
+        #memberDialog .member-form-v32 > label,
+        #memberDialog .member-form-v32 > .photo-field {
             display:flex;
             flex-direction:column;
             gap:7px;
             min-width:0;
             text-align:center;
         }
-        #memberDialog .member-form-v29 .member-notes-field,
-        #memberDialog .member-form-v29 .photo-field {
+        #memberDialog .member-form-v32 .member-notes-field,
+        #memberDialog .member-form-v32 .photo-field {
             grid-column:1 / -1;
+        }
+        #memberDialog .member-form-v32 input,
+        #memberDialog .member-form-v32 select,
+        #memberDialog .member-form-v32 textarea {
+            box-sizing:border-box;
+            width:100%;
+        }
+        #memberDialog #memberName,
+        #memberDialog #memberGender {
+            text-transform:uppercase;
+        }
+        #memberDialog .member-form-v32 input[readonly] {
+            opacity:.78;
         }
         #memberDialog .photo-controls {
             display:flex;
@@ -355,6 +455,10 @@ export const Dialog = {
         }
         #memberDialog .photo-controls img {
             flex:0 0 120px;
+            width:120px;
+            height:120px;
+            object-fit:cover;
+            border-radius:50%;
             background:#fff;
         }
         #memberDialog #memberPhotoStatus {
@@ -362,9 +466,9 @@ export const Dialog = {
             opacity:.78;
         }
         @media(max-width:720px){
-            #memberDialog .member-form-v29{grid-template-columns:1fr;}
-            #memberDialog .member-form-v29 .member-notes-field,
-            #memberDialog .member-form-v29 .photo-field{grid-column:auto;}
+            #memberDialog .member-form-v32{grid-template-columns:1fr;}
+            #memberDialog .member-form-v32 .member-notes-field,
+            #memberDialog .member-form-v32 .photo-field{grid-column:auto;}
         }
     `;
     document.head.appendChild(style);
