@@ -268,7 +268,7 @@ function bindTouchTree(treeArea) {
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
         if (pointers.size === 1) {
-            const viewport = window.TreeCanvas.viewport();
+            const viewport = getViewport();
             panStart = {
                 x: event.clientX,
                 y: event.clientY,
@@ -276,7 +276,7 @@ function bindTouchTree(treeArea) {
                 panY: viewport.panY
             };
         } else if (pointers.size === 2) {
-            const viewport = window.TreeCanvas.viewport();
+            const viewport = getViewport();
             pinchStart = {
                 distance: distance(),
                 zoom: viewport.zoom
@@ -292,7 +292,7 @@ function bindTouchTree(treeArea) {
         if (!pointers.has(event.pointerId)) return;
 
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        const viewport = window.TreeCanvas.viewport();
+        const viewport = getViewport();
 
         if (pointers.size >= 2 && pinchStart?.distance) {
             const currentDistance = distance();
@@ -302,13 +302,13 @@ function bindTouchTree(treeArea) {
                     2.5,
                     Math.max(0.3, pinchStart.zoom * scale)
                 );
-                window.TreeCanvas.setViewport({ zoom: nextZoom });
+                setViewport({ zoom: nextZoom });
             }
             return;
         }
 
         if (pointers.size === 1 && panStart) {
-            window.TreeCanvas.setViewport({
+            setViewport({
                 panX: panStart.panX + event.clientX - panStart.x,
                 panY: panStart.panY + event.clientY - panStart.y
             });
@@ -325,7 +325,7 @@ function bindTouchTree(treeArea) {
 
         if (pointers.size === 1) {
             const remaining = [...pointers.values()][0];
-            const viewport = window.TreeCanvas.viewport();
+            const viewport = getViewport();
             panStart = {
                 x: remaining.x,
                 y: remaining.y,
