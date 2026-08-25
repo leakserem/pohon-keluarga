@@ -9,7 +9,9 @@ import {
     zoomOut,
     resetZoom,
     centerTree,
-    fitTree
+    fitTree,
+    getViewport,
+    setViewport
 } from "./treeCanvas.js";
 
 import { Dialog } from "./dialog.js";
@@ -244,7 +246,7 @@ function installMobileUI() {
 
 function bindTouchTree(treeArea) {
     if (!("PointerEvent" in window)) return;
-    if (!window.TreeCanvas?.viewport || !window.TreeCanvas?.setViewport) return;
+    if (typeof getViewport !== "function" || typeof setViewport !== "function") return;
 
     const pointers = new Map();
     let panStart = null;
@@ -697,4 +699,7 @@ function injectMobileStyles() {
         }
     `;
     document.head.appendChild(style);
+}
+function $(selector) {
+    return document.querySelector(selector);
 }
