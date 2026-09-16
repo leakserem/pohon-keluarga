@@ -28,3 +28,13 @@ Note:
 The GitHub connector in this session can read the repository but rejects write
 operations with HTTP 403, so the replacement is provided as a ready-to-copy file
 instead of pretending it was committed remotely.
+
+## Search direct-to-node fix
+
+Added/changed:
+- assets/js/components/searchBox.js
+- assets/js/components/treeCanvas.js
+
+Selecting a search result now expands its hidden ancestor path when necessary,
+re-renders the tree, centers the selected node, and briefly highlights it.
+Works on desktop and mobile.
