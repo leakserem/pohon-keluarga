@@ -1,32 +1,29 @@
 /**
- * Family Tree v2.8
- * Search box - fixed to the actual page IDs
+ * Family Tree v2.9
+ * Search box - direct navigation to the selected tree node
  */
 
-import { findPeople, getPeople } from "../store.js";
+import { findPeople, getPeople, getPerson } from "../store.js";
 import { emit } from "../utils/dom.js";
+import { setCollapsed } from "./treeCollapse.js";
+import { renderTree, focusPerson } from "./treeCanvas.js";
 
 let input = null;
 let list = null;
-let emptyState = null;
 let initialized = false;
 
 export function initializeSearchBox() {
     if (initialized) return;
-
     input = document.querySelector("#searchInput");
     list = document.querySelector("#memberList");
-
     if (!input || !list) {
         console.warn("SearchBox: #searchInput atau #memberList tidak ditemukan.");
         return;
     }
-
     initialized = true;
     input.addEventListener("input", onSearch);
     input.addEventListener("search", onSearch);
     input.addEventListener("keydown", onKeyDown);
-
     renderMembers(getPeople());
 }
 
@@ -39,17 +36,13 @@ function onSearch() {
 function renderMembers(results, keyword = "") {
     if (!list) return;
     list.replaceChildren();
-
     if (!results.length) {
         const empty = document.createElement("div");
         empty.className = "search-empty";
-        empty.textContent = keyword
-            ? `Tidak ada anggota untuk “${keyword}”.`
-            : "Belum ada data anggota.";
+        empty.textContent = keyword ? `Tidak ada anggota untuk “${keyword}”.` : "Belum ada data anggota.";
         list.appendChild(empty);
         return;
     }
-
     const fragment = document.createDocumentFragment();
     for (const person of results) {
         const item = document.createElement("button");
@@ -57,26 +50,59 @@ function renderMembers(results, keyword = "") {
         item.className = "search-member-item";
         item.dataset.id = person.id;
         item.title = person.fullName;
-
         const name = document.createElement("strong");
         name.textContent = person.fullName || "Tanpa nama";
-
         const meta = document.createElement("span");
         meta.textContent = `ID ${person.id} • Generasi ${person.generation}`;
-
         item.append(name, meta);
         item.addEventListener("click", () => selectPerson(person));
         fragment.appendChild(item);
     }
-
     list.appendChild(fragment);
 }
 
 function selectPerson(person) {
     if (input) input.value = person.fullName || "";
-    emit("member:selected", person);
+    revealAncestors(person);
+    renderTree();
 
+    requestAnimationFrame(() => {
+        const focused = focusPerson(person.id, { zoom: 1 });
+        if (!focused) {
+            requestAnimationFrame(() => focusPerson(person.id, { zoom: 1 }));
+        }
+    });
+
+    emit("member:selected", person);
     document.querySelector("#sidebar")?.classList.remove("open");
+}
+
+function revealAncestors(person) {
+    const visited = new Set();
+    let current = person;
+
+    while (current && current.id) {
+        const currentId = String(current.id);
+        if (visited.has(currentId)) break;
+        visited.add(currentId);
+
+        const parentIds = [current.fatherId, current.motherId]
+            .map(value => String(value || "").trim())
+            .filter(Boolean);
+
+        if (!parentIds.length) break;
+
+        for (const parentId of parentIds) {
+            setCollapsed(parentId, false);
+            const parent = getPerson(parentId);
+            const spouseId = String(parent?.spouseId || "").trim();
+            if (spouseId) setCollapsed(spouseId, false);
+        }
+
+        current = getPerson(parentIds[0]) || getPerson(parentIds[1]);
+    }
+
+    setCollapsed(person.id, false);
 }
 
 function onKeyDown(event) {
@@ -85,7 +111,6 @@ function onKeyDown(event) {
         renderMembers(getPeople());
         return;
     }
-
     if (event.key === "Enter") {
         const first = list?.querySelector(".search-member-item");
         if (first) first.click();

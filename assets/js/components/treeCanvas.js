@@ -39,8 +39,6 @@ export function initializeTreeCanvas() {
 
     injectCanvasStyles();
 
-    // Keep SVG and nodes in the same coordinate system.
-    // SVG must live inside the transformed canvas, otherwise lines drift.
     if (svgLayer.parentElement !== canvas) {
         canvas.insertBefore(svgLayer, nodesLayer);
     }
@@ -153,6 +151,39 @@ export function centerTree() {
     updateTransform();
 }
 
+export function focusPerson(personId, options = {}) {
+    if (!treeArea || !canvas || !nodesLayer) return false;
+
+    const id = String(personId ?? "").trim();
+    if (!id) return false;
+
+    const node = [...nodesLayer.querySelectorAll(".tree-node")]
+        .find(element => String(element.dataset.id || "") === id);
+
+    if (!node) return false;
+
+    const targetZoom = Number.isFinite(Number(options.zoom))
+        ? Math.min(TREE.MAX_ZOOM, Math.max(TREE.MIN_ZOOM, Number(options.zoom)))
+        : Math.max(TREE.DEFAULT_ZOOM, 1);
+
+    zoom = targetZoom;
+
+    const nodeX = node.offsetLeft + node.offsetWidth / 2;
+    const nodeY = node.offsetTop + node.offsetHeight / 2;
+
+    panX = treeArea.clientWidth / 2 - nodeX * zoom;
+    panY = treeArea.clientHeight / 2 - nodeY * zoom;
+
+    updateTransform();
+    node.classList.add("search-focus");
+
+    window.setTimeout(() => {
+        node.classList.remove("search-focus");
+    }, 900);
+
+    return true;
+}
+
 export function fitTree() {
     if (!treeArea || !canvas || !canvas.offsetWidth || !canvas.offsetHeight) return;
 
@@ -225,36 +256,26 @@ function onToggleDescendants(event) {
     const personId = event?.detail?.personId;
     if (!personId) return;
 
-    // Toggle the collapse state and rebuild the geometry so the tree can shrink.
     toggleCollapsed(personId);
     renderTree();
 }
 
 function injectCanvasStyles() {
-    const styleId = "family-tree-canvas-v24";
+    const styleId = "family-tree-canvas-v25";
     if (document.getElementById(styleId)) return;
 
     const style = document.createElement("style");
     style.id = styleId;
     style.textContent = `
-        #treeViewport {
-            position: relative;
-        }
-
-        #treeCanvas {
-            position: absolute;
-            left: 0;
-            top: 0;
-            transform-origin: 0 0;
-        }
-
-        #treeSvg {
-            display: block;
-            overflow: visible;
-        }
-
-        #treeNodes {
-            position: relative;
+        #treeViewport { position: relative; }
+        #treeCanvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+        #treeSvg { display: block; overflow: visible; }
+        #treeNodes { position: relative; }
+        .tree-node.search-focus { animation: familyTreeSearchFocus .9s ease-out; }
+        @keyframes familyTreeSearchFocus {
+            0% { box-shadow: 0 0 0 0 rgba(45,104,80,.65), 0 10px 25px rgba(0,0,0,.12); }
+            45% { box-shadow: 0 0 0 8px rgba(45,104,80,.18), 0 18px 35px rgba(0,0,0,.20); }
+            100% { box-shadow: 0 0 0 0 rgba(45,104,80,0), 0 10px 25px rgba(0,0,0,.12); }
         }
     `;
     document.head.appendChild(style);
@@ -302,5 +323,6 @@ window.TreeCanvas = {
     zoomIn,
     zoomOut,
     resetZoom,
+    focusPerson,
     viewport: getViewport
 };
